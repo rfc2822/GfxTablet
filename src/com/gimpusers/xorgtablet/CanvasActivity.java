@@ -1,5 +1,6 @@
 package com.gimpusers.xorgtablet;
 
+import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.app.Activity;
@@ -44,6 +45,10 @@ public class CanvasActivity extends Activity {
 		return true;
 	}
 
+	public void showAbout(MenuItem item) {
+		startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(("https://github.com/rfc2822/XorgTablet"))));
+	}
+	
 	public void showSettings(MenuItem item) {
 		startActivity(new Intent(CanvasActivity.this, SettingsActivity.class));
 	}

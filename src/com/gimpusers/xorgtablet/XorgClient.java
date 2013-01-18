@@ -2,27 +2,16 @@ package com.gimpusers.xorgtablet;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import android.app.Service;
-import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.Binder;
-import android.os.IBinder;
-import android.preference.PreferenceManager;
-import android.provider.ContactsContract.Contacts.Data;
 import android.util.Log;
-import android.view.MotionEvent;
-import android.widget.Toast;
 
-// see protocol.h in xf86-networktablet driver for details about the protocol
+// see xf86-networktablet on Github for details about the protocol
 
 
 public class XorgClient implements Runnable {
@@ -39,7 +28,7 @@ public class XorgClient implements Runnable {
 	
 	boolean configureNetworking() {
 		try {
-			String hostName = preferences.getString(SettingsActivity.KEY_PREF_HOST, "127.0.0.1");
+			String hostName = preferences.getString(SettingsActivity.KEY_PREF_HOST, "unknown.invalid");
 			destAddress = InetAddress.getByName(hostName);
 			
 			if (lastConfiguration != null)
@@ -63,13 +52,15 @@ public class XorgClient implements Runnable {
 			while (true) {
 				XEvent event = motionQueue.take();
 				
-				if (destAddress == null)
-					continue;
-				
+				// save resolution, even if not sending it
 				if (event.getClass() == XConfigurationEvent.class)
 					lastConfiguration = (XConfigurationEvent)event;
+				// graceful shutdown
 				else if (event.getClass() == XDisconnectEvent.class)
 					break;
+				
+				if (destAddress == null)		// no valid destination host
+					continue;
 			
 				byte[] data = event.toByteArray();
 				DatagramPacket pkt = new DatagramPacket(data, data.length, destAddress, 40117);
