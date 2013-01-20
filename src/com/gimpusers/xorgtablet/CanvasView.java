@@ -62,7 +62,7 @@ public class CanvasView extends View implements OnSharedPreferenceChangeListener
 				if (!acceptStylusOnly || (event.getToolType(ptr) == MotionEvent.TOOL_TYPE_STYLUS)) {
 					//Log.i("XorgTablet", String.format("Generic motion event logged: %f|%f, pressure %f", event.getX(ptr), event.getY(ptr), event.getPressure(ptr)));
 					if (event.getActionMasked() == MotionEvent.ACTION_HOVER_MOVE)
-						xorgClient.getQueue().add(new XMotionEvent((int)event.getX(ptr), (int)event.getY(ptr), (int)event.getPressure(ptr)*PRESSURE_RESOLUTION));
+						xorgClient.getQueue().add(new XMotionEvent((int)event.getX(ptr), (int)event.getY(ptr), (int)(event.getPressure(ptr)*PRESSURE_RESOLUTION)));
 				}
 			return true;
 		}
@@ -77,14 +77,14 @@ public class CanvasView extends View implements OnSharedPreferenceChangeListener
 					//Log.i("XorgTablet", String.format("Touch event logged: %f|%f, pressure %f", event.getX(ptr), event.getY(ptr), event.getPressure(ptr)));
 					switch (event.getActionMasked()) {
 					case MotionEvent.ACTION_MOVE:
-						xorgClient.getQueue().add(new XMotionEvent((int)event.getX(ptr), (int)event.getY(ptr), (int)event.getPressure(ptr)*PRESSURE_RESOLUTION));
+						xorgClient.getQueue().add(new XMotionEvent((int)event.getX(ptr), (int)event.getY(ptr), (int)(event.getPressure(ptr)*PRESSURE_RESOLUTION)));
 						break;
 					case MotionEvent.ACTION_DOWN:
-						xorgClient.getQueue().add(new XButtonEvent((int)event.getX(ptr), (int)event.getY(ptr), (int)event.getPressure(ptr)*PRESSURE_RESOLUTION, true));
+						xorgClient.getQueue().add(new XButtonEvent((int)event.getX(ptr), (int)event.getY(ptr), (int)(event.getPressure(ptr)*PRESSURE_RESOLUTION), true));
 						break;
 					case MotionEvent.ACTION_UP:
 					case MotionEvent.ACTION_CANCEL:
-						xorgClient.getQueue().add(new XButtonEvent((int)event.getX(ptr), (int)event.getY(ptr), (int)event.getPressure(ptr)*PRESSURE_RESOLUTION, false));
+						xorgClient.getQueue().add(new XButtonEvent((int)event.getX(ptr), (int)event.getY(ptr), (int)(event.getPressure(ptr)*PRESSURE_RESOLUTION), false));
 						break;
 					}
 						
