@@ -1,11 +1,11 @@
-package com.gimpusers.xorgtablet;
+package at.bitfire.gfxtablet;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class XConfigurationEvent extends XEvent {
-	public XConfigurationEvent(int x, int y, int pressure) {
+public class NetMotionEvent extends NetEvent {
+	public NetMotionEvent(int x, int y, int pressure) {
 		super(x, y, pressure);
 	}
 
@@ -15,7 +15,7 @@ public class XConfigurationEvent extends XEvent {
 		DataOutputStream dos = new DataOutputStream(baos);
 		
 		try {
-			dos.write(2);	/* EVENT_TYPE_SET_RESOLUTION */
+			dos.write(0);	/* EVENT_TYPE_MOTION */
 			dos.writeShort(x);
 			dos.writeShort(y);
 			dos.writeShort(pressure);

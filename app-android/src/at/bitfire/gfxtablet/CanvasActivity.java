@@ -1,4 +1,6 @@
-package com.gimpusers.xorgtablet;
+package at.bitfire.gfxtablet;
+
+import at.bitfire.gfxtablet.R;
 
 import android.net.Uri;
 import android.os.Bundle;
@@ -6,16 +8,14 @@ import android.preference.PreferenceManager;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.LinearLayout;
-import android.widget.Toast;
 
 public class CanvasActivity extends Activity {
 	CanvasView canvas;
 	SharedPreferences prefs;
-	XorgClient xorgClient;
+	NetworkClient netClient;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -27,15 +27,15 @@ public class CanvasActivity extends Activity {
 		setContentView(R.layout.activity_canvas);
 		LinearLayout layout = (LinearLayout)findViewById(R.id.canvas_layout);
 		
-		new Thread(xorgClient = new XorgClient(PreferenceManager.getDefaultSharedPreferences(this))).start();
+		new Thread(netClient = new NetworkClient(PreferenceManager.getDefaultSharedPreferences(this))).start();
 
-		canvas = new CanvasView(this, xorgClient);
+		canvas = new CanvasView(this, netClient);
 		layout.addView(canvas);
 	}
 
 	@Override
 	protected void onDestroy() {
-		xorgClient.getQueue().add(new XDisconnectEvent());
+		netClient.getQueue().add(new NetDisconnectEvent());
 		super.onDestroy();
 	}
 	
@@ -46,7 +46,7 @@ public class CanvasActivity extends Activity {
 	}
 
 	public void showAbout(MenuItem item) {
-		startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(("https://github.com/rfc2822/XorgTablet"))));
+		startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(("http://rfc2822.github.com/GfxTablet"))));
 	}
 	
 	public void showSettings(MenuItem item) {

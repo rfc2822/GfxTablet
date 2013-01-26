@@ -1,12 +1,15 @@
-package com.gimpusers.xorgtablet;
+package at.bitfire.gfxtablet;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class XMotionEvent extends XEvent {
-	public XMotionEvent(int x, int y, int pressure) {
+public class NetButtonEvent extends NetEvent {
+	boolean down;
+	
+	public NetButtonEvent(int x, int y, int pressure, boolean down) {
 		super(x, y, pressure);
+		this.down = down;
 	}
 
 	@Override
@@ -15,14 +18,17 @@ public class XMotionEvent extends XEvent {
 		DataOutputStream dos = new DataOutputStream(baos);
 		
 		try {
-			dos.write(0);	/* EVENT_TYPE_MOTION */
+			dos.write(1);	/* EVENT_TYPE_BUTTON */
 			dos.writeShort(x);
 			dos.writeShort(y);
 			dos.writeShort(pressure);
+			dos.write(1);
+			dos.write(down ? 1 : 0);
 		} catch (IOException e) {
 			return null;
 		}
 		
 		return baos.toByteArray();
 	}
+
 }
