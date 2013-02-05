@@ -44,11 +44,11 @@ void init_device(int fd)
 	uidev.id.product = 0x1;
 	uidev.id.version = 1;
 	uidev.absmin[ABS_X] = 0;
-	uidev.absmax[ABS_X] = INT_MAX;
+	uidev.absmax[ABS_X] = SHRT_MAX;
 	uidev.absmin[ABS_Y] = 0;
-	uidev.absmax[ABS_Y] = INT_MAX;
+	uidev.absmax[ABS_Y] = SHRT_MAX;
 	uidev.absmin[ABS_PRESSURE] = 0;
-	uidev.absmax[ABS_PRESSURE] = 10000;	// 10,000 instead of 32,767 because sometimes there is pressure >1.0
+	uidev.absmax[ABS_PRESSURE] = SHRT_MAX/2;
 	if (write(fd, &uidev, sizeof(uidev)) < 0)
 		die("error: write");
 
@@ -66,7 +66,7 @@ int prepare_socket()
 
 	bzero(&addr, sizeof(struct sockaddr_in));
 	addr.sin_family = AF_INET;
-	addr.sin_port = htons(NETWORKTABLET_PORT);
+	addr.sin_port = htons(GFXTABLET_PORT);
 	addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
 	if (bind(s, (struct sockaddr *)&addr, sizeof(addr)) == -1)
@@ -90,8 +90,6 @@ int main(void)
 {
 	int device, socket;
 	struct event_packet ev_pkt;
-	int x, y, btn_down = 0;
-	int max_x = INT_MAX, max_y = INT_MAX;
 
 	if ((device = open("/dev/uinput", O_WRONLY | O_NONBLOCK)) < 0)
 		die("error: open");
@@ -99,34 +97,35 @@ int main(void)
 	init_device(device);
 	socket = prepare_socket();
 
-	while (recv(socket, &ev_pkt, sizeof(ev_pkt), 0) >= 7) {		// every packet has at least 7 bytes
+	while (recv(socket, &ev_pkt, sizeof(ev_pkt), 0) >= 9) {		// every packet has at least 9 bytes
 		printf("."); fflush(0);
+
+		if (memcmp(ev_pkt.signature, "GfxTablet", 9) != 0) {
+			fprintf(stderr, "\nGot unknown packet on port %i, ignoring\n", GFXTABLET_PORT);
+			continue;
+		}
+		ev_pkt.version = ntohs(ev_pkt.version);
+		if (ev_pkt.version != PROTOCOL_VERSION) {
+			fprintf(stderr, "\nGfxTablet app speaks protocol version %i but driver speaks version %i, please update\n",
+				ev_pkt.version, PROTOCOL_VERSION);
+			break;
+		}
 
 		ev_pkt.x = ntohs(ev_pkt.x);
 		ev_pkt.y = ntohs(ev_pkt.y);
 		ev_pkt.pressure = ntohs(ev_pkt.pressure);
-		//printf("x: %hi, y: %hi, pressure: %hi\n", ev_pkt.x, ev_pkt.y, ev_pkt.pressure);
+		printf("x: %hi, y: %hi, pressure: %hi\n", ev_pkt.x, ev_pkt.y, ev_pkt.pressure);
 
-		x = (long)ev_pkt.x * INT_MAX/max_x;
-		y = (long)ev_pkt.y * INT_MAX/max_y;
-
-		send_event(device, EV_ABS, ABS_X, x);
-		send_event(device, EV_ABS, ABS_Y, y);
+		send_event(device, EV_ABS, ABS_X, ev_pkt.x);
+		send_event(device, EV_ABS, ABS_Y, ev_pkt.y);
 		send_event(device, EV_ABS, ABS_PRESSURE, ev_pkt.pressure);
 
 		switch (ev_pkt.type) {
-			case EVENT_TYPE_SET_RESOLUTION: {
-				struct input_absinfo absinfo;
-				max_x = ev_pkt.x;
-				max_y = ev_pkt.y;
-				printf("Set resolution to %hix%hi\n", max_x+1, max_y+1);
-				break;
-			}
 			case EVENT_TYPE_MOTION:
 				send_event(device, EV_SYN, SYN_REPORT, 1);
 				break;
 			case EVENT_TYPE_BUTTON:
-				if (ev_pkt.button == 1)
+				if (ev_pkt.button == 0)
 					send_event(device, EV_KEY, BTN_TOUCH, ev_pkt.down);
 				send_event(device, EV_SYN, SYN_REPORT, 1);
 				break;

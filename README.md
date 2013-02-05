@@ -18,7 +18,7 @@ It consists of two components:
 * the input driver for your PC
 
 The GfxTablet app sends motion and touch events via UDP to a specified host
-on port 40117.
+on port 40118.
 
 The input driver must be installed on your PC. It creates a virtual "network tablet"
 on your PC that is controlled by your Android device.

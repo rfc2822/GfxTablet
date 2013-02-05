@@ -1,16 +1,19 @@
 
-#define NETWORKTABLET_PORT 40117
+#define GFXTABLET_PORT 40118
+
+#define PROTOCOL_VERSION 1
 
 
 #pragma pack(push)
 #pragma pack(1)
 
-#define EVENT_TYPE_MOTION          0
-#define EVENT_TYPE_BUTTON          1
-#define EVENT_TYPE_SET_RESOLUTION  2
+#define EVENT_TYPE_MOTION 0
+#define EVENT_TYPE_BUTTON 1
 
 struct event_packet
 {
+	char signature[9];
+	unsigned short version;
 	char type;	/* EVENT_TYPE_... */
 	struct {	/* required */
 		short x, y;

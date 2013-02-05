@@ -1,2 +1,2 @@
 
-networktablet : networktablet.c
+networktablet : networktablet.c protocol.h

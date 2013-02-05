@@ -35,7 +35,7 @@ public class CanvasActivity extends Activity {
 
 	@Override
 	protected void onDestroy() {
-		netClient.getQueue().add(new NetDisconnectEvent());
+		netClient.getQueue().add(new NetEvent(NetEvent.Type.TYPE_DISCONNECT));
 		super.onDestroy();
 	}
 	
