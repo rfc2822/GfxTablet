@@ -57,6 +57,12 @@ Requirements
 * App: Any device with Android 4.0+ and touch screen
 * Driver: Linux with uinput kernel module (included in modern versions of Fedora, Ubuntu etc.)
 
+If you use Xorg (you probably do):
+
+* Xorg-evdev module loaded and configured
+  Probably on by default, but if it doesn't work, you may need to activate the
+  module: see https://github.com/rfc2822/GfxTablet/issues/7#issuecomment-13338216
+
 
 Installation
 ============
@@ -107,10 +113,6 @@ Part 3: Use it
 Now you can use your tablet as an input device in every Linux application (including X.org
 applications). For instance, when networktablet is running, GIMP should have a "Network Tablet"
 entry in "Edit / Input Devices". Set its mode to "Screen" and it's ready to use.
-
-It's important that you start the app *after* the driver, because it sends the resolution
-to the driver. If you start the app before the driver, the mouse cursor will always be on
-the left top and won't move much.
 
 
 Support
