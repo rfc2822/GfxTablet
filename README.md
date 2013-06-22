@@ -75,7 +75,7 @@ Part 1: uinput driver
 
 On your PC, either download one of these binaries (don't forget to `chmod a+x` it):
 
-* [uinput-networktablet 64-bit, dynamically linked, tested with Fedora 18 and Ubuntu 12.10](https://github.com/rfc2822/GfxTablet/blob/binaries/uinput-networktablet-x86_64?raw=true)
+* [networktablet 64-bit, dynamically linked, tested with Fedora 18 and Ubuntu 12.10](https://github.com/rfc2822/GfxTablet/blob/binaries/networktablet-x86_64?raw=true)
 
 or compile it yourself (don't be afraid, it's only one file)
 
@@ -90,12 +90,13 @@ uinput access, you'll need to do it yourself or just run the driver as root:
 
 `sudo ./networktablet`
 
-Then, `xinput list` should show a "Network Tablet" device.
+Then you should see a status message saying the driver is ready. If you do `xinput list` in a separate
+terminal, should show a "Network Tablet" device.
 
 You can start and stop (Ctrl+C) the Network Tablet at any time, but please be aware that applications
 which use the device may be confused by that and could crash.
 
-`networktablet` will display a dot for every touch/motion event it receives.
+`networktablet` will display a status line for every touch/motion event it receives.
 
 
 Part 2: App

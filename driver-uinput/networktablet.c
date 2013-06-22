@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <signal.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
@@ -15,6 +16,9 @@
 	perror(str); \
 	exit(EXIT_FAILURE); \
 }
+
+
+int udp_socket;
 
 
 void init_device(int fd)
@@ -85,19 +89,29 @@ void send_event(int device, int type, int code, int value)
 		error("error: write()");
 }
 
+void quit(int signal) {
+	close(udp_socket);
+}
+
 
 int main(void)
 {
-	int device, socket;
+	int device;
 	struct event_packet ev_pkt;
 
 	if ((device = open("/dev/uinput", O_WRONLY | O_NONBLOCK)) < 0)
 		die("error: open");
 
 	init_device(device);
-	socket = prepare_socket();
+	udp_socket = prepare_socket();
 
-	while (recv(socket, &ev_pkt, sizeof(ev_pkt), 0) >= 9) {		// every packet has at least 9 bytes
+	printf("GfxTablet driver (protocol version %u) is ready and listening on 0.0.0.0:%u (UDP)\n"
+		"Hint: Make sure that this port is not blocked by your firewall.\n", PROTOCOL_VERSION, GFXTABLET_PORT);
+
+	signal(SIGINT, quit);
+	signal(SIGTERM, quit);
+
+	while (recv(udp_socket, &ev_pkt, sizeof(ev_pkt), 0) >= 9) {		// every packet has at least 9 bytes
 		printf("."); fflush(0);
 
 		if (memcmp(ev_pkt.signature, "GfxTablet", 9) != 0) {
@@ -132,10 +146,12 @@ int main(void)
 
 		}
 	}
+	close(udp_socket);
 
-	close(socket);
-
+	printf("Removing network tablet from device list\n");
 	ioctl(device, UI_DEV_DESTROY);
 	close(device);
+
+	printf("GfxTablet driver shut down gracefully\n");
 	return 0;
 }
