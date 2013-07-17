@@ -102,8 +102,11 @@ which use the device may be confused by that and could crash.
 Part 2: App
 -----------
 
-You can either compile the app from the source code in the Git repository or download
-it directly from Google Play: https://play.google.com/store/apps/details?id=at.bitfire.gfxtablet
+You can either
+
+1. compile the app from the source code in the Git repository, or
+2. [download it from the open-source market F-Droid](https://f-droid.org/repository/browse/?fdcategory=Multimedia&fdid=at.bitfire.gfxtablet) (*recommended*), or
+3. [download it from Google Play](https://play.google.com/store/apps/details?id=at.bitfire.gfxtablet)
 
 After installing, enter your host IP in the Settings / Host name and it should be ready.
 
