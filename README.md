@@ -27,7 +27,7 @@ So, you can use your Android tablet or smartphone to control the PC and,
 for instance _use GIMP with your Android tablet as a graphics tablet_
 (even pressure-sensitive, if your hardware supports it).
 
-Homepage: http://rfc2822.github.com/GfxTablet/
+Homepage: http://rfc2822.github.io/GfxTablet/
 
 If you want to support this project, please consider a [donation via PayPal](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=ZT8F5NRCBDB2C&no_note=0&no_shipping=1&currency_code=EUR&item_name=GfxTablet+donation).
 
@@ -105,8 +105,9 @@ Part 2: App
 You can either
 
 1. compile the app from the source code in the Git repository, or
-2. [download it from the open-source market F-Droid](https://f-droid.org/repository/browse/?fdcategory=Multimedia&fdid=at.bitfire.gfxtablet) (*recommended*), or
-3. [download it from Google Play](https://play.google.com/store/apps/details?id=at.bitfire.gfxtablet)
+2. [download it from the open-source market F-Droid](https://f-droid.org/repository/browse/?fdcategory=Multimedia&fdid=at.bitfire.gfxtablet) (**recommended**), or
+3. [download it from Samsung Apps](http://apps.samsung.com/earth/topApps/topAppsDetail.as?productId=000000662994)
+4. [download it from Google Play](https://play.google.com/store/apps/details?id=at.bitfire.gfxtablet)
 
 After installing, enter your host IP in the Settings / Host name and it should be ready.
 
