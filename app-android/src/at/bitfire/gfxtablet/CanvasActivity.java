@@ -10,6 +10,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.LinearLayout;
 
 public class CanvasActivity extends Activity {
@@ -23,6 +25,10 @@ public class CanvasActivity extends Activity {
 
 		PreferenceManager.setDefaultValues(this, R.xml.network_preferences, false);
 		PreferenceManager.setDefaultValues(this, R.xml.drawing_preferences, false);
+		
+		this.requestWindowFeature(Window.FEATURE_NO_TITLE);
+		this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+				WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		
 		setContentView(R.layout.activity_canvas);
 		LinearLayout layout = (LinearLayout)findViewById(R.id.canvas_layout);
