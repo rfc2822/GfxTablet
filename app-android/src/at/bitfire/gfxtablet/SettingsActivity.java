@@ -12,7 +12,8 @@ import at.bitfire.gfxtablet.R;
 public class SettingsActivity extends PreferenceActivity {
     public static final String
 		KEY_PREF_HOST = "host_preference",
-		KEY_PREF_STYLUS_ONLY = "stylus_only_preference";
+		KEY_PREF_STYLUS_ONLY = "stylus_only_preference",
+		KEY_PREF_FULLSCREEN = "fullscreen_preference";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
