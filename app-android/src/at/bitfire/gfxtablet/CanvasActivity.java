@@ -1,18 +1,18 @@
 package at.bitfire.gfxtablet;
 
-import at.bitfire.gfxtablet.R;
-
-import android.net.Uri;
-import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
+import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.ViewConfiguration;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 public class CanvasActivity extends Activity {
 	CanvasView canvas;
@@ -27,10 +27,14 @@ public class CanvasActivity extends Activity {
 		PreferenceManager.setDefaultValues(this, R.xml.drawing_preferences, false);
 		
 		settings = PreferenceManager.getDefaultSharedPreferences(this);
-		if (settings.getBoolean(SettingsActivity.KEY_PREF_FULLSCREEN, true)) {
-			this.requestWindowFeature(Window.FEATURE_NO_TITLE);
-			this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-					WindowManager.LayoutParams.FLAG_FULLSCREEN);
+		if (settings.getBoolean(SettingsActivity.KEY_PREF_FULLSCREEN, false)) {
+			if (ViewConfiguration.get(this).hasPermanentMenuKey())
+				requestWindowFeature(Window.FEATURE_NO_TITLE);
+			else
+				Toast.makeText(this, "Limited full-screen due to missing hardware menu button", Toast.LENGTH_LONG).show();
+			
+			getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+				WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		}
 		
 		setContentView(R.layout.activity_canvas);
@@ -55,10 +59,20 @@ public class CanvasActivity extends Activity {
 	}
 
 	public void showAbout(MenuItem item) {
-		startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(("http://rfc2822.github.com/GfxTablet"))));
+		startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(("http://rfc2822.github.io/GfxTablet/"))));
 	}
 	
 	public void showSettings(MenuItem item) {
-		startActivity(new Intent(CanvasActivity.this, SettingsActivity.class));
+		startActivityForResult(new Intent(this, SettingsActivity.class), 0);
+	}
+
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		if (resultCode == SettingsActivity.RESULT_RESTART) {
+	        finish();
+			Intent i = new Intent(this, CanvasActivity.class);
+	        i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+	        startActivity(i);
+		}
 	}
 }
