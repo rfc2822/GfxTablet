@@ -5,6 +5,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.Path;
+import android.graphics.PorterDuff.Mode;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.view.MotionEvent;
@@ -17,6 +22,12 @@ public class CanvasView extends View implements OnSharedPreferenceChangeListener
 	NetworkClient netClient;
 	SharedPreferences settings;
 	boolean acceptStylusOnly;
+	
+	Bitmap bitmap;
+	Canvas canvas;
+	Path path;
+	Paint paint_bitmap, paint;
+
 	int maxX, maxY;
 	
 	public CanvasView(Context context, NetworkClient netClient) {
@@ -24,8 +35,13 @@ public class CanvasView extends View implements OnSharedPreferenceChangeListener
 		
 		// disable until networking has been configured
 		setEnabled(false);
-		setBackgroundColor(0xFFD0D0D0);
 
+		this.path = new Path();
+		this.paint_bitmap = new Paint(Paint.DITHER_FLAG);
+		this.paint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.DITHER_FLAG);
+		this.paint.setColor(0xFF000000);
+		this.paint.setStyle(Paint.Style.STROKE);
+		
 		settings = PreferenceManager.getDefaultSharedPreferences(context);
 		settings.registerOnSharedPreferenceChangeListener(this);
 		reconfigureAcceptedInputDevices();
@@ -50,8 +66,16 @@ public class CanvasView extends View implements OnSharedPreferenceChangeListener
 	protected void onSizeChanged (int w, int h, int oldw, int oldh) {
 		maxX = w;
 		maxY = h;
+		this.bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+		this.canvas = new Canvas(this.bitmap);
 	}
 	
+	@Override
+	protected void onDraw(Canvas canvas) {
+		canvas.drawColor(0xFFD0D0D0);
+		canvas.drawBitmap(this.bitmap, 0, 0, this.paint_bitmap);
+		canvas.drawPath(this.path, this.paint);
+	}
 	
 	@Override
 	public boolean onGenericMotionEvent(MotionEvent event) {
@@ -79,20 +103,28 @@ public class CanvasView extends View implements OnSharedPreferenceChangeListener
 					short nx = normalizeX(event.getX(ptr)),
 						  ny = normalizeY(event.getY(ptr)),
 						  npressure = normalizePressure(event.getPressure(ptr));
+					float x = event.getX();
+					float y = event.getY();
 					//Log.i("XorgTablet", String.format("Touch event logged: %f|%f, pressure %f", event.getX(ptr), event.getY(ptr), event.getPressure(ptr)));
 					switch (event.getActionMasked()) {
 					case MotionEvent.ACTION_MOVE:
 						netClient.getQueue().add(new NetEvent(Type.TYPE_MOTION, nx, ny, npressure));
+						this.path.lineTo(x, y);
 						break;
 					case MotionEvent.ACTION_DOWN:
 						netClient.getQueue().add(new NetEvent(Type.TYPE_BUTTON, nx, ny, npressure, 0, true));
+						this.path.reset();
+						this.path.moveTo(x, y);
 						break;
 					case MotionEvent.ACTION_UP:
 					case MotionEvent.ACTION_CANCEL:
 						netClient.getQueue().add(new NetEvent(Type.TYPE_BUTTON, nx, ny, npressure, 0, false));
+						this.path.lineTo(x, y);
+						this.canvas.drawPath(this.path, this.paint);
+						this.path.reset();
 						break;
 					}
-						
+					invalidate();
 				}
 			return true;
 		}
@@ -112,6 +144,10 @@ public class CanvasView extends View implements OnSharedPreferenceChangeListener
 		return (short)(Math.min(Math.max(0, x), 2.0) * Short.MAX_VALUE/2.0);
 	}
 	
+	void clearDraw() {
+		this.canvas.drawColor(0, Mode.CLEAR);
+		invalidate();
+	}
 	
 	private class ConfigureNetworkingTask extends AsyncTask<Void, Void, Boolean> {
 		@Override
