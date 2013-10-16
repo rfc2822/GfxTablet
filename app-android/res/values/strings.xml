@@ -7,5 +7,7 @@
     <string name="stylus_preference">Sense stylus only</string>
     <string name="fullscreen_preference">Fullscreen</string>
     <string name="menu_about">About / Help</string>
+    <string name="fullscreen_preference_summary">Title bar will only be hidden when hardware menu button is present</string>
+    <string name="stylus_preference_summary">Ignores touch events from fingers</string>
 
 </resources>

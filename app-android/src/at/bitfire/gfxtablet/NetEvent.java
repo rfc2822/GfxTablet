@@ -59,6 +59,7 @@ public class NetEvent {
 			case TYPE_BUTTON:
 				dos.writeByte(1);
 				break;
+			default:
 			}
 			
 			dos.writeShort(x);
