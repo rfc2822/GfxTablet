@@ -66,6 +66,10 @@ public class CanvasActivity extends Activity {
 		startActivityForResult(new Intent(this, SettingsActivity.class), 0);
 	}
 
+	public void clearDraw(MenuItem item) {
+		this.canvas.clearDraw();
+	}
+	
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (resultCode == SettingsActivity.RESULT_RESTART) {
