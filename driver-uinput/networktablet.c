@@ -162,12 +162,13 @@ int main(int argc, char *argv[])
  	int totalWidth = width = XDisplayWidth(display, 0);
  	int totalHeight = height = XDisplayHeight(display, 0);
 
+ 	gfx_host_monitor* monitors = getMonitors();
   	printf("totalWidth %d\n", totalWidth);
 
 	int opt;
 	while ((opt = getopt(argc, argv, "s:w:h:x:y:")) != -1) {
 		switch (opt) {
-		case 's': screenId = atoi(optarg); break;
+		case 's': screenId = atoi(optarg); width = monitors[screenId].width; height = monitors[screenId].height; break;
 		case 'w': width = atoi(optarg); break;
 		case 'h': height = atoi(optarg); break;
 		case 'x': xOffset = atoi(optarg); break;
@@ -193,13 +194,10 @@ int main(int argc, char *argv[])
 	signal(SIGINT, quit);
 	signal(SIGTERM, quit);
 
-	gfx_host_monitor* monitors = getMonitors();
+	
 
 	if (screenId != -1) {
-		if (width == -1)
-			width = monitors[screenId].width;
-		if (height == -1)
-			height = monitors[screenId].height;
+		
 		xOffset = monitors[screenId].x + xOffset;
 		yOffset = monitors[screenId].y + yOffset;
 	}
@@ -224,11 +222,11 @@ int main(int argc, char *argv[])
 		ev_pkt.pressure = ntohs(ev_pkt.pressure);
 		printf("x: %hi, y: %hi, pressure: %hi\n", ev_pkt.x, ev_pkt.y, ev_pkt.pressure);
 
-		ev_pkt.x = ev_pkt.x * (float) totalWidth / SHRT_MAX;
-		ev_pkt.x = ev_pkt.x * (float) width / totalWidth;
+		ev_pkt.x = (short) ((float) ev_pkt.x * (float) totalWidth / (float) SHRT_MAX);
+		ev_pkt.x = (short) ((float) ev_pkt.x * (float) width / (float) totalWidth);
 		ev_pkt.x = (short) ((float) SHRT_MAX / totalWidth * (xOffset + ev_pkt.x));
-		ev_pkt.y = ev_pkt.y * (float) totalHeight / SHRT_MAX;
-		ev_pkt.y = ev_pkt.y * (float) height / totalHeight;
+		ev_pkt.y = (short) ((float) ev_pkt.y * (float) totalHeight / SHRT_MAX);
+		ev_pkt.y = (short) ((float) ev_pkt.y * (float) height / totalHeight);
 		ev_pkt.y = (short) ((float) SHRT_MAX / totalHeight * (yOffset + ev_pkt.y));
 		send_event(device, EV_ABS, ABS_X, ev_pkt.x);
 		send_event(device, EV_ABS, ABS_Y, ev_pkt.y);
