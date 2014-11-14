@@ -10,6 +10,16 @@
 #define EVENT_TYPE_MOTION 0
 #define EVENT_TYPE_BUTTON 1
 
+typedef struct  
+{
+	int x;
+	int y;
+	unsigned width;
+	unsigned height;
+	unsigned long mm_height;
+	unsigned long mm_width;
+} gfx_host_monitor;
+
 struct event_packet
 {
 	char signature[9];
