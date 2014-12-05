@@ -10,7 +10,6 @@
         android:layout_height="fill_parent"
         android:layout_alignParentRight="true"
         android:layout_alignParentTop="true"
-        android:background="@color/Dark"
         android:orientation="vertical" >
 
     </LinearLayout>
