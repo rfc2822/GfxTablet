@@ -9,5 +9,6 @@
     <string name="menu_about">About / Help</string>
     <string name="fullscreen_preference_summary">Title bar will only be hidden when hardware menu button is present</string>
     <string name="stylus_preference_summary">Ignores touch events from fingers</string>
+    <string name="dark_theme_preference">Use Dark Background</string>
 
 </resources>

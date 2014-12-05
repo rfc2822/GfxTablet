@@ -24,12 +24,14 @@ public class CanvasView extends View implements OnSharedPreferenceChangeListener
 		
 		// disable until networking has been configured
 		setEnabled(false);
-		setBackgroundColor(0xFFD0D0D0);
+		setBackgroundColor(0xFFD0D0D0); //0x2A2A2A
 
 		settings = PreferenceManager.getDefaultSharedPreferences(context);
 		settings.registerOnSharedPreferenceChangeListener(this);
+		
 		reconfigureAcceptedInputDevices();
 		
+		this.reconfigureLayout();
 		this.netClient = netClient;
 		new ConfigureNetworkingTask().execute();
 	}
@@ -39,7 +41,17 @@ public class CanvasView extends View implements OnSharedPreferenceChangeListener
 		if (key.equals(SettingsActivity.KEY_PREF_HOST))
 			new ConfigureNetworkingTask().execute();
 		else if (key.equals(SettingsActivity.KEY_PREF_STYLUS_ONLY))
-			reconfigureAcceptedInputDevices();
+			this.reconfigureAcceptedInputDevices();
+		else if (key.equals(SettingsActivity.KEY_PREF_DARKCANVAS))
+			this.reconfigureLayout();
+	}
+	
+	void reconfigureLayout()
+	{
+		if (settings.getBoolean(SettingsActivity.KEY_PREF_DARKCANVAS, false))
+			setBackgroundColor(0x2E2E2E);
+		else
+			setBackgroundColor(0xFFD0D0D0);			
 	}
 		
 	void reconfigureAcceptedInputDevices() {

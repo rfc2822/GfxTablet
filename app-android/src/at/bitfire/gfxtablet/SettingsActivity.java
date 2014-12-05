@@ -18,7 +18,8 @@ public class SettingsActivity extends PreferenceActivity implements OnSharedPref
     public static final String
 		KEY_PREF_HOST = "host_preference",
 		KEY_PREF_STYLUS_ONLY = "stylus_only_preference",
-		KEY_PREF_FULLSCREEN = "fullscreen_preference";
+		KEY_PREF_FULLSCREEN = "fullscreen_preference",
+		KEY_PREF_DARKCANVAS = "darkcanvas_preference";
     
 
     @Override
@@ -62,6 +63,14 @@ public class SettingsActivity extends PreferenceActivity implements OnSharedPref
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.drawing_preferences);
+        }
+    }
+    
+    public static class LayoutPrefsFragment extends PreferenceFragment {
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            addPreferencesFromResource(R.xml.layout_preferences);
         }
     }
 }
