@@ -3,18 +3,20 @@ package at.bitfire.gfxtablet;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewConfiguration;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
-
-public class CanvasActivity extends Activity {
+public class CanvasActivity extends Activity implements OnSharedPreferenceChangeListener {
 	CanvasView canvas;
 	SharedPreferences settings;
 	NetworkClient netClient;
@@ -27,6 +29,7 @@ public class CanvasActivity extends Activity {
 		PreferenceManager.setDefaultValues(this, R.xml.drawing_preferences, false);
 		
 		settings = PreferenceManager.getDefaultSharedPreferences(this);
+		settings.registerOnSharedPreferenceChangeListener(this);
 		if (settings.getBoolean(SettingsActivity.KEY_PREF_FULLSCREEN, false)) {
 			if (ViewConfiguration.get(this).hasPermanentMenuKey())
 				requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -44,8 +47,23 @@ public class CanvasActivity extends Activity {
 
 		canvas = new CanvasView(this, netClient);
 		layout.addView(canvas);
+		this.reconfigureLayout();
 	}
 
+	@Override
+	public void onSharedPreferenceChanged(SharedPreferences pref, String key) {
+		if (key.equals(SettingsActivity.KEY_PREF_PADDING))
+			this.reconfigureLayout();
+	}
+	
+	void reconfigureLayout()
+	{
+		String padding = settings.getString(SettingsActivity.KEY_PREF_PADDING, "0");
+		int p = Integer.parseInt(padding);
+		RelativeLayout l = (RelativeLayout)findViewById(R.id.relative_layout);
+		l.setPadding(p, p, p, p);
+	}
+	
 	@Override
 	protected void onDestroy() {
 		netClient.getQueue().add(new NetEvent(NetEvent.Type.TYPE_DISCONNECT));
