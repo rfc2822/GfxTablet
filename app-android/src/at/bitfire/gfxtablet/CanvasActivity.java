@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
+import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -20,6 +21,8 @@ public class CanvasActivity extends Activity implements OnSharedPreferenceChange
 	CanvasView canvas;
 	SharedPreferences settings;
 	NetworkClient netClient;
+	
+	LinearLayout layout;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -41,19 +44,23 @@ public class CanvasActivity extends Activity implements OnSharedPreferenceChange
 		}
 		
 		setContentView(R.layout.activity_canvas);
-		LinearLayout layout = (LinearLayout)findViewById(R.id.canvas_layout);
+		layout = (LinearLayout)findViewById(R.id.canvas_layout);
 		
 		new Thread(netClient = new NetworkClient(PreferenceManager.getDefaultSharedPreferences(this))).start();
-
+		
 		canvas = new CanvasView(this, netClient);
 		layout.addView(canvas);
+		
 		this.reconfigureLayout();
+		this.reconfigureColor();
 	}
 
 	@Override
 	public void onSharedPreferenceChanged(SharedPreferences pref, String key) {
 		if (key.equals(SettingsActivity.KEY_PREF_PADDING))
 			this.reconfigureLayout();
+		else if (key.equals(SettingsActivity.KEY_PREF_DARKCANVAS))
+			this.reconfigureColor();
 	}
 	
 	void reconfigureLayout()
@@ -62,6 +69,16 @@ public class CanvasActivity extends Activity implements OnSharedPreferenceChange
 		int p = Integer.parseInt(padding);
 		RelativeLayout l = (RelativeLayout)findViewById(R.id.relative_layout);
 		l.setPadding(p, p, p, p);
+	}
+	
+	void reconfigureColor()
+	{
+		GradientDrawable sd = (GradientDrawable) layout.getBackground().mutate();
+		if (settings.getBoolean(SettingsActivity.KEY_PREF_DARKCANVAS, false))
+			sd.setColor(0xFF263248);
+		else
+			sd.setColor(0xFF7E8AA2);	
+		sd.invalidateSelf();
 	}
 	
 	@Override

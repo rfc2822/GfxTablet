@@ -1,10 +1,17 @@
 package at.bitfire.gfxtablet;
 
+import org.xmlpull.v1.XmlPullParser;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.LayerDrawable;
+import android.graphics.drawable.ShapeDrawable;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.view.MotionEvent;
@@ -30,7 +37,7 @@ public class CanvasView extends View implements OnSharedPreferenceChangeListener
 		
 		reconfigureAcceptedInputDevices();
 		
-		this.reconfigureLayout();
+		//this.reconfigureLayout();
 		this.netClient = netClient;
 		new ConfigureNetworkingTask().execute();
 	}
@@ -41,17 +48,8 @@ public class CanvasView extends View implements OnSharedPreferenceChangeListener
 			new ConfigureNetworkingTask().execute();
 		else if (key.equals(SettingsActivity.KEY_PREF_STYLUS_ONLY))
 			this.reconfigureAcceptedInputDevices();
-		else if (key.equals(SettingsActivity.KEY_PREF_DARKCANVAS))
-			this.reconfigureLayout();
 	}
 	
-	void reconfigureLayout()
-	{
-		if (settings.getBoolean(SettingsActivity.KEY_PREF_DARKCANVAS, false))
-			setBackgroundColor(0xFF2E2E2E);
-		else
-			setBackgroundColor(0xFFD0D0D0);	
-	}
 		
 	void reconfigureAcceptedInputDevices() {
 		acceptStylusOnly = settings.getBoolean(SettingsActivity.KEY_PREF_STYLUS_ONLY, false);

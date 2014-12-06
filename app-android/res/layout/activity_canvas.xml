@@ -12,6 +12,7 @@
         android:layout_height="fill_parent"
         android:layout_alignParentRight="true"
         android:layout_alignParentTop="true"
+        android:background="@drawable/layout_bg"
         android:orientation="vertical" >
 
     </LinearLayout>
