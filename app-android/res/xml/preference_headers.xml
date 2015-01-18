@@ -5,5 +5,7 @@
             android:title="Networking" />
     <header android:fragment="at.bitfire.gfxtablet.SettingsActivity$DrawingPrefsFragment"
             android:title="Drawing" />
+    <header android:fragment="at.bitfire.gfxtablet.SettingsActivity$LayoutPrefsFragment"
+            android:title="Layout" />
     
 </preference-headers>

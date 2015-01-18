@@ -1,0 +1,8 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <CheckBoxPreference
+        android:key="darkcanvas_preference"
+        android:title="@string/dark_theme_preference" />
+    <EditTextPreference android:title="Padding" android:defaultValue="0" android:key="canvaspadding_preference" android:inputType = "number"/>
+    
+</PreferenceScreen>

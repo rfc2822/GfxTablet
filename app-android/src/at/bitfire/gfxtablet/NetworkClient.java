@@ -6,6 +6,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import android.bluetooth.BluetoothSocket;
 import android.content.SharedPreferences;
 import android.util.Log;
 import at.bitfire.gfxtablet.NetEvent.Type;
