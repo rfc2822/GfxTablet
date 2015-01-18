@@ -82,6 +82,10 @@ public class CanvasActivity extends Activity implements OnSharedPreferenceChange
 	}
 	
 	@Override
+    public void onBackPressed() {
+	}
+	
+	@Override
 	protected void onDestroy() {
 		netClient.getQueue().add(new NetEvent(NetEvent.Type.TYPE_DISCONNECT));
 		super.onDestroy();
