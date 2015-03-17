@@ -1,3 +1,34 @@
+// networktablet.c -- GfxTablet network manager daemon.
+//
+// This code has been modified from it's original source on
+// GitHub -- https://github.com/edtrind/GfxTablet-master
+// Author:  bitfire web engineering/GfxTablet -- Richard Hirner
+// http://rfc2822.github.io/GfxTablet/
+//
+// Modified by quadcore-dev/loopyd - Robert Smith
+// lupinedreamexpress@gmail.com
+//
+// This version provides higher compatability for GIMP (by
+// converting the output values to larger ones so that the
+// pressure curve function becomes usable in "Input Settings"
+// -> "Network Tablet".
+//
+// It also contains some eyecandy, a visible pressure bar that
+// indicates how hard your last stroke was.  It does not spam
+// your terminal window with the events, but will exit with
+// an error code if there is a problem.
+//
+// This code was tested on Ubuntu 14.04 LTS Studio and is
+// verified working on this platform.
+//
+// I am not responsible if my code causes your GfxTablet
+// daemon to stop functioning, your computer to catch fire,
+// and your pets to die, etc.
+//
+// Have a wonderful life!
+//
+// ~quadcore-dev/loopyd
+// "We write code because we like to."
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,15 +42,14 @@
 #include <linux/input.h>
 #include <linux/uinput.h>
 #include "protocol.h"
+#include "qccolor.h"
 
 #define die(str, args...) { \
 	perror(str); \
 	exit(EXIT_FAILURE); \
 }
 
-
 int udp_socket;
-
 
 void init_device(int fd)
 {
@@ -93,7 +123,6 @@ void quit(int signal) {
 	close(udp_socket);
 }
 
-
 int main(void)
 {
 	int device;
@@ -105,11 +134,23 @@ int main(void)
 	init_device(device);
 	udp_socket = prepare_socket();
 
-	printf("GfxTablet driver (protocol version %u) is ready and listening on 0.0.0.0:%u (UDP)\n"
-		"Hint: Make sure that this port is not blocked by your firewall.\n", PROTOCOL_VERSION, GFXTABLET_PORT);
+	cls_screen();
+	textcolor(RESET, WHITE, BLACK);
+	textcolor(BRIGHT, GREEN, BLACK);
+	printf("GfxTablet driver (protocol version %u) is ready and listening on:\n", PROTOCOL_VERSION);
+	printf("\t0.0.0.0:%u (UDP)\n\n", GFXTABLET_PORT);
+	textcolor(BRIGHT, RED, BLACK);
+	printf("Hint: Make sure that this port is not blocked by your firewall!\n");
+	textcolor(BRIGHT, WHITE, BLACK);
+	printf("FIX applied by quadcore-dev/loopyd\nRobert Smith -- lupinedreamexpress@gmail.com.\n");
+	textcolor(DIM, WHITE, BLACK);
+	printf("For GIMP Pressure curve + eyecandy pressure bar!\n\n");
 
 	signal(SIGINT, quit);
 	signal(SIGTERM, quit);
+
+	long fixed_pressure = 0L;
+	short progj = 0L;
 
 	while (recv(udp_socket, &ev_pkt, sizeof(ev_pkt), 0) >= 9) {		// every packet has at least 9 bytes
 		printf("."); fflush(0);
@@ -127,9 +168,20 @@ int main(void)
 
 		ev_pkt.x = ntohs(ev_pkt.x);
 		ev_pkt.y = ntohs(ev_pkt.y);
-		ev_pkt.pressure = ntohs(ev_pkt.pressure);
-		printf("x: %hi, y: %hi, pressure: %hi\n", ev_pkt.x, ev_pkt.y, ev_pkt.pressure);
+		
+		// FIX:  More precise pressure value for GIMP
+		fixed_pressure = (long) ((float) (LONG_MAX / SHRT_MAX) * (float) ntohs(ev_pkt.pressure));
+		ev_pkt.pressure = fixed_pressure;
 
+		// Calculate and draw our pressure bar.
+		progj = (short) (((float) fixed_pressure / (float) LONG_MAX) * 64.00f);
+		textcolor(RESET, WHITE, BLACK);
+		printf("A1 (X): %hi, A2 (Y): %hi, \t A3 (Pressure):  ", ev_pkt.x, ev_pkt.y);
+		progbar(progj, 16);
+		textcolor(RESET, WHITE, BLACK);
+		printf("       \r");
+
+		// Send the events to the app.
 		send_event(device, EV_ABS, ABS_X, ev_pkt.x);
 		send_event(device, EV_ABS, ABS_Y, ev_pkt.y);
 		send_event(device, EV_ABS, ABS_PRESSURE, ev_pkt.pressure);
@@ -148,7 +200,8 @@ int main(void)
 	}
 	close(udp_socket);
 
-	printf("Removing network tablet from device list\n");
+	textcolor(RESET, WHITE, BLACK);
+	printf("\nRemoving network tablet from device list\n");
 	ioctl(device, UI_DEV_DESTROY);
 	close(device);
 
