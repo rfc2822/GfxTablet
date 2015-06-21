@@ -1,0 +1,28 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory android:title="Network preferences">
+        <EditTextPreference
+            android:defaultValue="0.0.0.0"
+            android:key="host_preference"
+            android:singleLine="true"
+            android:inputType="textUri"
+            android:title="@string/preferences_host"
+            android:summary="@string/preferences_host_summary" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="Drawing preferences">
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="stylus_only_preference"
+            android:title="@string/preferences_stylus_only"
+            android:summaryOn="@string/preferences_stylus_only_on"
+            android:summaryOff="@string/preferences_stylus_only_off" />
+
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="dark_canvas_preference"
+            android:title="@string/preferences_dark_canvas"
+            android:summaryOn="@string/preferences_dark_canvas_on"
+            android:summaryOff="@string/preferences_dark_canvas_off" />
+
+    </PreferenceCategory>
+</PreferenceScreen>

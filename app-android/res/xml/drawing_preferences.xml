@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
-    <CheckBoxPreference android:title="@string/stylus_preference" android:key="stylus_only_preference" android:defaultValue="false" android:summary="@string/stylus_preference_summary"/>
-    <CheckBoxPreference android:title="@string/fullscreen_preference" android:key="fullscreen_preference" android:defaultValue="false" android:summary="@string/fullscreen_preference_summary"/>
-</PreferenceScreen>

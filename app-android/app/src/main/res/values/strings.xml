@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">GfxTablet</string>
+    <string name="menu_settings">Settings</string>
+    <string name="menu_about">About / Help</string>
+
+    <string name="no_host_defined">No valid recipient host defined. Please configure in \"Settings / Recipient host\".</string>
+
+    <string name="preferences_host">Recipient host</string>
+    <string name="preferences_host_summary">Host name or IP address where touch input is sent to</string>
+    <string name="preferences_stylus_only">Sense stylus only</string>
+    <string name="preferences_stylus_only_on">Only stylus input will be processed</string>
+    <string name="preferences_stylus_only_off">Finger and stylus input will be processed</string>
+
+    <string name="preferences_dark_canvas">Use dark canvas</string>
+    <string name="preferences_dark_canvas_on">Black canvas will be used</string>
+    <string name="preferences_dark_canvas_off">White canvas will be used</string>
+
+</resources>

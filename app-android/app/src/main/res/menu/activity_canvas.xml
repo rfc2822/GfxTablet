@@ -1,0 +1,19 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:onClick="switchFullScreen"
+        android:title="Fullscreen"
+        app:showAsAction="always" />
+
+    <item
+        android:onClick="showSettings"
+        android:title="@string/menu_settings"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:onClick="showAbout"
+        android:title="@string/menu_about"
+        app:showAsAction="never" />
+
+</menu>

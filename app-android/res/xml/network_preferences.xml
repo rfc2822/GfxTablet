@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
-    <EditTextPreference android:title="@string/preferences_host_title" android:key="host_preference" android:defaultValue="please-replace.invalid" android:singleLine="true"/>
-</PreferenceScreen>
