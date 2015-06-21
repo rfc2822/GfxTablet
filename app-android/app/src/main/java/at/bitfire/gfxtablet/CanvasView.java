@@ -63,7 +63,7 @@ public class CanvasView extends View {
 					short nx = normalizeX(event.getX(ptr)),
 						  ny = normalizeY(event.getY(ptr)),
 						  npressure = normalizePressure(event.getPressure(ptr));
-					Log.v(TAG, String.format("Touch event logged: %f|%f, pressure %f", event.getX(ptr), event.getY(ptr), event.getPressure(ptr)));
+					Log.v(TAG, String.format("Touch event logged: action %d @ %f|%f (pressure %f)", event.getActionMasked(), event.getX(ptr), event.getY(ptr), event.getPressure(ptr)));
 					switch (event.getActionMasked()) {
 					case MotionEvent.ACTION_MOVE:
 						netClient.getQueue().add(new NetEvent(Type.TYPE_MOTION, nx, ny, npressure));

@@ -22,6 +22,6 @@ Packet structure, uses network byte order (big endian):
   when type == button event:
   1  byte     number of button, starting with 0
   1  byte     button status:
-                0 button is down
-                1 button is up
+                0 button is released ("up")
+                1 button is pressed ("down")
 
