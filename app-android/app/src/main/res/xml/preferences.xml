@@ -12,6 +12,13 @@
     <PreferenceCategory android:title="Drawing preferences">
         <CheckBoxPreference
             android:defaultValue="false"
+            android:key="keep_display_active_preference"
+            android:title="@string/preferences_keep_display_active"
+            android:summaryOn="@string/preferences_keep_display_active_on"
+            android:summaryOff="@string/preferences_keep_display_active_off" />
+
+        <CheckBoxPreference
+            android:defaultValue="false"
             android:key="stylus_only_preference"
             android:title="@string/preferences_stylus_only"
             android:summaryOn="@string/preferences_stylus_only_on"

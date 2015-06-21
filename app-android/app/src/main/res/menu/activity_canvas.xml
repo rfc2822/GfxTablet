@@ -2,13 +2,16 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
+        android:id="@+id/menu_fullscreen"
         android:onClick="switchFullScreen"
         android:title="Fullscreen"
+        android:icon="@drawable/ic_arrow_expand_white_48dp"
         app:showAsAction="always" />
 
     <item
         android:onClick="showSettings"
         android:title="@string/menu_settings"
+        android:icon="@drawable/ic_settings_white_48dp"
         app:showAsAction="ifRoom" />
 
     <item

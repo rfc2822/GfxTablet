@@ -1,14 +1,18 @@
 package at.bitfire.gfxtablet;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
+import android.widget.Toast;
 
 public class CanvasActivity extends ActionBarActivity {
     NetworkClient netClient;
@@ -24,6 +28,10 @@ public class CanvasActivity extends ActionBarActivity {
     protected void onResume() {
         super.onResume();
 
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        if (prefs.getBoolean(SettingsActivity.KEY_KEEP_DISPLAY_ACTIVE, false))
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
         new ConfigureNetworkingTask().execute();
     }
 
@@ -38,6 +46,12 @@ public class CanvasActivity extends ActionBarActivity {
 		getMenuInflater().inflate(R.menu.activity_canvas, menu);
 		return true;
 	}
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        menu.findItem(R.id.menu_fullscreen).setVisible(Build.VERSION.SDK_INT >= 19);
+        return true;
+    }
 
 	public void showAbout(MenuItem item) {
 		startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(("https://rfc2822.github.io/GfxTablet/"))));
@@ -70,6 +84,8 @@ public class CanvasActivity extends ActionBarActivity {
             if (success) {
                 setContentView(new CanvasView(CanvasActivity.this, netClient));
                 new Thread(netClient).start();
+
+                Toast.makeText(CanvasActivity.this, "Touch events will be sent to " + netClient.destAddress.getHostAddress() + ":" + NetworkClient.GFXTABLET_PORT, Toast.LENGTH_LONG).show();
             } else
                 setContentView(R.layout.activity_no_host);
         }
