@@ -25,13 +25,17 @@ void init_device(int fd)
 {
 	struct uinput_user_dev uidev;
 
-	// 1 button
+	// enable synchronization
+	if (ioctl(fd, UI_SET_EVBIT, EV_SYN) < 0)
+		die("error: ioctl UI_SET_EVBIT EV_SYN");
+
+	// enable 1 button
 	if (ioctl(fd, UI_SET_EVBIT, EV_KEY) < 0)
 		die("error: ioctl UI_SET_EVBIT EV_KEY");
 	if (ioctl(fd, UI_SET_KEYBIT, BTN_TOUCH) < 0)
 		die("error: ioctl UI_SET_KEYBIT");
 
-	// 2 main axes + pressure (absolute positioning)
+	// enable 2 main axes + pressure (absolute positioning)
 	if (ioctl(fd, UI_SET_EVBIT, EV_ABS) < 0)
 		die("error: ioctl UI_SET_EVBIT EV_ABS");
 	if (ioctl(fd, UI_SET_ABSBIT, ABS_X) < 0)
@@ -86,7 +90,7 @@ void send_event(int device, int type, int code, int value)
 	ev.code = code;
 	ev.value = value;
 	if (write(device, &ev, sizeof(ev)) < 0)
-		error("error: write()");
+		die("error: write()");
 }
 
 void quit(int signal) {

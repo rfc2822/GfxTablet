@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.preference.PreferenceManager;
+import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -22,21 +23,29 @@ public class CanvasView extends View {
 
     public CanvasView(Context context, NetworkClient networkClient) {
         super(context);
-
-        netClient = networkClient;
+        this.netClient = networkClient;
 
         // process preferences
         settings = PreferenceManager.getDefaultSharedPreferences(context);
         acceptStylusOnly = settings.getBoolean(SettingsActivity.KEY_PREF_STYLUS_ONLY, false);
-        setBackgroundColor(settings.getBoolean(SettingsActivity.KEY_DARK_CANVAS, false) ? Color.BLACK : Color.WHITE);
-	}
+    }
 
-	@Override
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        if (settings.getBoolean(SettingsActivity.KEY_DARK_CANVAS, false))
+            setBackgroundColor(Color.BLACK);
+        else
+            setBackgroundResource(R.drawable.bg_grid_pattern);
+    }
+
+    @Override
 	protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        Log.i(TAG, "Canvas size changed: " + w + "x" + h + " (before: " + oldw + "x" + oldh + ")");
 		maxX = w;
 		maxY = h;
 	}
-	
+
 	@Override
 	public boolean onGenericMotionEvent(MotionEvent event) {
 		if (isEnabled()) {

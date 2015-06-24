@@ -7,7 +7,7 @@ android {
     defaultConfig {
         applicationId "at.bitfire.gfxtablet"
         minSdkVersion 14
-        targetSdkVersion 14
+        targetSdkVersion 22
     }
 
     buildTypes {
@@ -19,5 +19,5 @@ android {
 }
 
 dependencies {
-    compile "com.android.support:appcompat-v7:21.0.0"
+    compile "com.android.support:appcompat-v7:21.0.+"
 }

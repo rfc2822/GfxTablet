@@ -1,22 +1,22 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+      xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
         android:id="@+id/menu_fullscreen"
-        android:onClick="switchFullScreen"
-        android:title="Fullscreen"
         android:icon="@drawable/ic_arrow_expand_white_48dp"
-        app:showAsAction="always" />
+        android:onClick="switchFullScreen"
+        app:showAsAction="always"
+        android:title="Fullscreen"/>
 
     <item
-        android:onClick="showSettings"
-        android:title="@string/menu_settings"
         android:icon="@drawable/ic_settings_white_48dp"
-        app:showAsAction="ifRoom" />
+        android:onClick="showSettings"
+        app:showAsAction="ifRoom"
+        android:title="@string/menu_settings"/>
 
     <item
         android:onClick="showAbout"
-        android:title="@string/menu_about"
-        app:showAsAction="never" />
+        app:showAsAction="never"
+        android:title="@string/menu_about"/>
 
 </menu>
