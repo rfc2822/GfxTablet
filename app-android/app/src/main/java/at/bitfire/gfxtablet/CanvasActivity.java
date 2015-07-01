@@ -9,21 +9,26 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.PopupMenu;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.ImageView;
 import android.widget.Toast;
 
-public class CanvasActivity extends ActionBarActivity implements View.OnSystemUiVisibilityChangeListener {
-    private static int RESULT_LOAD_IMAGE = 1;
+public class CanvasActivity extends AppCompatActivity implements View.OnSystemUiVisibilityChangeListener, SharedPreferences.OnSharedPreferenceChangeListener {
+    private static final int RESULT_LOAD_IMAGE = 1;
+    private static final String TAG = "GfxTablet.Canvas";
+
+    final Uri homepageUri = Uri.parse(("https://rfc2822.github.io/GfxTablet/"));
 
     NetworkClient netClient;
-    CanvasView canvas;
 
     SharedPreferences preferences;
     boolean fullScreen = false;
@@ -34,18 +39,18 @@ public class CanvasActivity extends ActionBarActivity implements View.OnSystemUi
         super.onCreate(savedInstanceState);
 
         preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        preferences.registerOnSharedPreferenceChangeListener(this);
 
+        setContentView(R.layout.activity_canvas);
+
+        // create network client in a separate thread
         netClient = new NetworkClient(PreferenceManager.getDefaultSharedPreferences(this));
         new Thread(netClient).start();
-
-        canvas = new CanvasView(CanvasActivity.this, netClient);
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-
         new ConfigureNetworkingTask().execute();
+
+        // notify CanvasView of the network client
+        CanvasView canvas = (CanvasView)findViewById(R.id.canvas);
+        canvas.setNetworkClient(netClient);
     }
 
     @Override
@@ -61,9 +66,9 @@ public class CanvasActivity extends ActionBarActivity implements View.OnSystemUi
     }
 
     @Override
-    protected void onStop() {
+    protected void onDestroy() {
+        super.onDestroy();
         netClient.getQueue().add(new NetEvent(NetEvent.Type.TYPE_DISCONNECT));
-        super.onStop();
     }
 
     @Override
@@ -81,13 +86,32 @@ public class CanvasActivity extends ActionBarActivity implements View.OnSystemUi
     }
 
     public void showAbout(MenuItem item) {
-        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(("https://rfc2822.github.io/GfxTablet/"))));
+        startActivity(new Intent(Intent.ACTION_VIEW, homepageUri));
+    }
+
+    public void showDonate(MenuItem item) {
+        startActivity(new Intent(Intent.ACTION_VIEW, homepageUri.buildUpon().fragment("donate").build()));
     }
 
     public void showSettings(MenuItem item) {
         startActivityForResult(new Intent(this, SettingsActivity.class), 0);
     }
 
+
+    // preferences were changed
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        switch (key) {
+            case SettingsActivity.KEY_PREF_HOST:
+                Log.i(TAG, "Recipient host changed, reconfiguring network client");
+                new ConfigureNetworkingTask().execute();
+                break;
+        }
+    }
+
+
+    // full-screen methods
 
     public void switchFullScreen(MenuItem item) {
         final View decorView = getWindow().getDecorView();
@@ -97,7 +121,7 @@ public class CanvasActivity extends ActionBarActivity implements View.OnSystemUi
             uiFlags ^= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
         if (Build.VERSION.SDK_INT >= 16)
             uiFlags ^= View.SYSTEM_UI_FLAG_FULLSCREEN;
-        if (Build.VERSION.SDK_INT >= 18)
+        if (Build.VERSION.SDK_INT >= 19)
             uiFlags ^= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
 
         decorView.setOnSystemUiVisibilityChangeListener(this);
@@ -106,15 +130,20 @@ public class CanvasActivity extends ActionBarActivity implements View.OnSystemUi
 
     @Override
     public void onSystemUiVisibilityChange(int visibility) {
+        Log.i("GfxTablet", "System UI changed " + visibility);
+
+        fullScreen = (visibility & View.SYSTEM_UI_FLAG_HIDE_NAVIGATION) != 0;
+
         // show/hide action bar according to full-screen mode
-        if ((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) != 0) {
+        if (fullScreen) {
             CanvasActivity.this.getSupportActionBar().hide();
-            fullScreen = true;
             Toast.makeText(CanvasActivity.this, "Press Back button to leave full-screen mode.", Toast.LENGTH_LONG).show();
         } else
             CanvasActivity.this.getSupportActionBar().show();
     }
 
+
+    // template image logic
 
     private String getTemplateImagePath() {
         return preferences.getString(SettingsActivity.KEY_TEMPLATE_IMAGE, null);
@@ -143,6 +172,7 @@ public class CanvasActivity extends ActionBarActivity implements View.OnSystemUi
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == RESULT_LOAD_IMAGE && resultCode == RESULT_OK && data != null) {
             Uri selectedImage = data.getData();
             String[] filePathColumn = { MediaStore.Images.Media.DATA };
@@ -159,32 +189,41 @@ public class CanvasActivity extends ActionBarActivity implements View.OnSystemUi
             } finally {
                 cursor.close();
             }
-        } else
-            super.onActivityResult(requestCode, resultCode, data);
+        }
     }
 
     public void showTemplateImage() {
-        String picturePath = preferences.getString(SettingsActivity.KEY_TEMPLATE_IMAGE, null);
-        if (picturePath != null) {
-            Drawable drawable = BitmapDrawable.createFromPath(picturePath);
-            getWindow().setBackgroundDrawable(drawable);
-        } else
-            getWindow().setBackgroundDrawableResource(android.R.drawable.screen_background_light);
+        ImageView template = (ImageView)findViewById(R.id.canvas_template);
+        template.setImageDrawable(null);
+
+        if (template.getVisibility() == View.VISIBLE) {
+            String picturePath = preferences.getString(SettingsActivity.KEY_TEMPLATE_IMAGE, null);
+            if (picturePath != null)
+                try {
+                    // TODO load bitmap efficiently, for intended view size and display resolution
+                    // https://developer.android.com/training/displaying-bitmaps/load-bitmap.html
+                    final Drawable drawable = new BitmapDrawable(getResources(), picturePath);
+                    template.setImageDrawable(drawable);
+                } catch (Exception e) {
+                    Toast.makeText(this, e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+                }
+        }
     }
 
 
     private class ConfigureNetworkingTask extends AsyncTask<Void, Void, Boolean> {
         @Override
         protected Boolean doInBackground(Void... params) {
-            return netClient.configureNetworking();
+            return netClient.reconfigureNetworking();
         }
 
         protected void onPostExecute(Boolean success) {
-            if (success) {
-                setContentView(canvas);
+            if (success)
                 Toast.makeText(CanvasActivity.this, "Touch events will be sent to " + netClient.destAddress.getHostAddress() + ":" + NetworkClient.GFXTABLET_PORT, Toast.LENGTH_LONG).show();
-            } else
-                setContentView(R.layout.activity_no_host);
+
+            findViewById(R.id.canvas_template).setVisibility(success ? View.VISIBLE : View.GONE);
+            findViewById(R.id.canvas).setVisibility(success ? View.VISIBLE : View.GONE);
+            findViewById(R.id.canvas_message).setVisibility(success ? View.GONE : View.VISIBLE);
         }
     }
 

@@ -1,20 +1,20 @@
-<menu xmlns:tools="http://schemas.android.com/tools"
-      xmlns:android="http://schemas.android.com/apk/res/android"
-      xmlns:app="http://schemas.android.com/apk/res-auto">
+<menu
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
         android:id="@+id/menu_set_template_image"
         android:icon="@drawable/ic_action_picture"
         android:onClick="setTemplateImage"
-        app:showAsAction="always"
-        android:title="Set template image"/>
+        app:showAsAction="ifRoom"
+        android:title="@string/menu_set_template_image"/>
 
     <item
         android:id="@+id/menu_fullscreen"
         android:icon="@drawable/ic_arrow_expand_white_48dp"
         android:onClick="switchFullScreen"
-        app:showAsAction="always"
-        android:title="Fullscreen"/>
+        app:showAsAction="ifRoom"
+        android:title="@string/fullscreen"/>
 
     <item
         android:icon="@drawable/ic_settings_white_48dp"
@@ -26,5 +26,10 @@
         android:onClick="showAbout"
         app:showAsAction="never"
         android:title="@string/menu_about"/>
+
+    <item
+        android:onClick="showDonate"
+        app:showAsAction="never"
+        android:title="@string/menu_donate"/>
 
 </menu>

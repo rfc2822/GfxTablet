@@ -13,19 +13,19 @@ import at.bitfire.gfxtablet.NetEvent.Type;
 
 
 public class NetworkClient implements Runnable {
-	static int GFXTABLET_PORT = 40118;
+	static final int GFXTABLET_PORT = 40118;
 	
-	LinkedBlockingQueue<NetEvent> motionQueue = new LinkedBlockingQueue<>();
+	final LinkedBlockingQueue<NetEvent> motionQueue = new LinkedBlockingQueue<>();
 	LinkedBlockingQueue<NetEvent> getQueue() { return motionQueue; }
 	
 	InetAddress destAddress;
-	SharedPreferences preferences;
+	final SharedPreferences preferences;
 
 	NetworkClient(SharedPreferences preferences) {
 		this.preferences = preferences;
 	}
 	
-	boolean configureNetworking() {
+	boolean reconfigureNetworking() {
 		try {
 			String hostName = preferences.getString(SettingsActivity.KEY_PREF_HOST, "unknown.invalid");
 			destAddress = InetAddress.getByName(hostName);

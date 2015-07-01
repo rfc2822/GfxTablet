@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -13,31 +14,62 @@ import android.view.View;
 import at.bitfire.gfxtablet.NetEvent.Type;
 
 @SuppressLint("ViewConstructor")
-public class CanvasView extends View {
+public class CanvasView extends View implements SharedPreferences.OnSharedPreferenceChangeListener {
     private static final String TAG = "GfxTablet.CanvasView";
 
     final SharedPreferences settings;
-    final NetworkClient netClient;
+    NetworkClient netClient;
 	boolean acceptStylusOnly;
 	int maxX, maxY;
 
-    public CanvasView(Context context, NetworkClient networkClient) {
-        super(context);
-        this.netClient = networkClient;
 
-        // process preferences
+    // setup
+
+    public CanvasView(Context context, AttributeSet attributeSet) {
+        super(context, attributeSet);
+
+        // view is disabled until a network client is set
+        setEnabled(false);
+
         settings = PreferenceManager.getDefaultSharedPreferences(context);
-        acceptStylusOnly = settings.getBoolean(SettingsActivity.KEY_PREF_STYLUS_ONLY, false);
+        settings.registerOnSharedPreferenceChangeListener(this);
+        setBackground();
+        setInputMethods();
     }
 
-    @Override
-    protected void onAttachedToWindow() {
-        super.onAttachedToWindow();
+    public void setNetworkClient(NetworkClient networkClient) {
+        netClient = networkClient;
+        setEnabled(true);
+    }
+
+
+    // settings
+
+    protected void setBackground() {
         if (settings.getBoolean(SettingsActivity.KEY_DARK_CANVAS, false))
             setBackgroundColor(Color.BLACK);
         else
             setBackgroundResource(R.drawable.bg_grid_pattern);
     }
+
+    protected void setInputMethods() {
+        acceptStylusOnly = settings.getBoolean(SettingsActivity.KEY_PREF_STYLUS_ONLY, false);
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        switch (key) {
+            case SettingsActivity.KEY_PREF_STYLUS_ONLY:
+                setInputMethods();
+                break;
+            case SettingsActivity.KEY_DARK_CANVAS:
+                setBackground();
+                break;
+        }
+    }
+
+
+    // drawing
 
     @Override
 	protected void onSizeChanged(int w, int h, int oldw, int oldh) {
@@ -65,7 +97,7 @@ public class CanvasView extends View {
 	}
 	
 	@Override
-	public boolean onTouchEvent(MotionEvent event) {
+	public boolean onTouchEvent(@NonNull MotionEvent event) {
 		if (isEnabled()) {
 			for (int ptr = 0; ptr < event.getPointerCount(); ptr++)
 				if (!acceptStylusOnly || (event.getToolType(ptr) == MotionEvent.TOOL_TYPE_STYLUS)) {
@@ -104,4 +136,5 @@ public class CanvasView extends View {
 	short normalizePressure(float x) {
 		return (short)(Math.min(Math.max(0, x), 2.0) * Short.MAX_VALUE/2.0);
 	}
+
 }
