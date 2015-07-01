@@ -1,7 +1,7 @@
 
 To be informed about updates:
 
-* [follow GfxTablet on Twitter](http://twitter.com/GfxTablet)
+* [follow GfxTablet on Twitter](https://twitter.com/GfxTablet)
 * [subscribe to our RSS/Atom feed](http://feeds.feedburner.com/GfxTablet)
 * [subscribe to email notifications](http://feedburner.google.com/fb/a/mailverify?uri=GfxTablet)
 
@@ -27,9 +27,9 @@ So, you can use your Android tablet or smartphone to control the PC and,
 for instance _use GIMP with your Android tablet as a graphics tablet_
 (even pressure-sensitive, if your hardware supports it).
 
-Homepage: http://rfc2822.github.io/GfxTablet/
+Homepage: https://rfc2822.github.io/GfxTablet/
 
-If you want to support this project, please consider a [donation via PayPal](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=ZT8F5NRCBDB2C&no_note=0&no_shipping=1&currency_code=EUR&item_name=GfxTablet+donation).
+If you want to support this project, please consider a [donation](#donate).
 
 
 License
@@ -37,9 +37,7 @@ License
 
 GfxTablet is licensed under The MIT License.
 
-Author: Richard Hirner
-
-Powered by [bitfire web engineering](http://www.bitfire.at) / [gimpusers.com](http://www.gimpusers.com)
+Author: Ricki Hirner / powered by [bitfire web engineering](https://www.bitfire.at) / [gimpusers.com](http://www.gimpusers.com)
 
 
 Features
@@ -59,15 +57,14 @@ Requirements
 
 If you use Xorg (you probably do):
 
-* Xorg-evdev module loaded and configured
-  Probably on by default, but if it doesn't work, you may need to activate the
-  module: see https://github.com/rfc2822/GfxTablet/issues/7#issuecomment-13338216
+* Xorg-evdev module loaded and configured – probably on by default, but if it doesn't work, you may
+  need to activate the module: see https://github.com/rfc2822/GfxTablet/issues/7#issuecomment-13338216
 
 
 Installation
 ============
 
-Github repository: http://github.com/rfc2822/GfxTablet
+Github repository: https://github.com/rfc2822/GfxTablet
 
 
 Part 1: uinput driver
@@ -75,14 +72,14 @@ Part 1: uinput driver
 
 On your PC, either download one of these binaries (don't forget to `chmod a+x` it):
 
-* [networktablet 64-bit, dynamically linked, tested with Fedora 18 and Ubuntu 12.10](https://github.com/rfc2822/GfxTablet/blob/binaries/networktablet-x86_64?raw=true)
+* [networktablet 64-bit, dynamically linked, tested with Fedora 18 and Ubuntu 15.04](https://github.com/rfc2822/GfxTablet/blob/binaries/networktablet-x86_64?raw=true)
 
 or compile it yourself (don't be afraid, it's only one file)
 
 1. Clone the repository:
    `git clone git://github.com/rfc2822/GfxTablet.git`
 2. Install gcc, make and linux kernel header includes (`kernel-headers` on Fedora)
-3. `cd driver-uinput; make`
+3. `cd GfxTablet/driver-uinput; make`
 
 Then, run the binary. The driver runs in user-mode, so it doesn't need any special privileges.
 However, it needs access to `/dev/uinput`. If your distribution doesn't create a group for
@@ -106,8 +103,9 @@ You can either
 
 1. compile the app from the source code in the Git repository, or
 2. [download it from the open-source market F-Droid](https://f-droid.org/repository/browse/?fdcategory=Multimedia&fdid=at.bitfire.gfxtablet) (**recommended**), or
-3. [download it from Samsung Apps](http://apps.samsung.com/earth/topApps/topAppsDetail.as?productId=000000662994)
-4. [download it from Google Play](https://play.google.com/store/apps/details?id=at.bitfire.gfxtablet)
+3. download it from Samsung Galaxy Apps, or
+4. [download it directly from Github](https://github.com/rfc2822/GfxTablet/releases), or
+5. [download it from Google Play](https://play.google.com/store/apps/details?id=at.bitfire.gfxtablet)
 
 After installing, enter your host IP in the Settings / Host name and it should be ready.
 
@@ -120,8 +118,46 @@ applications). For instance, when networktablet is running, GIMP should have a "
 entry in "Edit / Input Devices". Set its mode to "Screen" and it's ready to use.
 
 
+Frequently Asked Questions
+==========================
+
+Using with multiple monitors
+----------------------------
+
+If you're using multiple screens, you can assign the Network Tablet device to a specific screen
+once it's running (thanks to @symbally and @Evi1M4chine, https://github.com/rfc2822/GfxTablet/issues/30#issuecomment-30605827):
+
+1. Use `xrandr` to identify which monitor you would like to have the stylus picked up on. In this example, `DVI-I-1`
+   is the display to assign.
+2. Do `xinput map-to-output "$( xinput list --id-only "Network Tablet" )" DVI-I-1`.
+
+Known issues
+------------
+
+* With Gnome 3.16 (as shipped with Fedora 22), [Gnome Shell crashes when using GfxTablet](https://bugzilla.redhat.com/show_bug.cgi?id=1209008).
+
+
 Support
 =======
 
 For bug reports, please use the [Github issues page](https://github.com/rfc2822/GfxTablet/issues)
 or just fork the repository, fix the bug and send a merge request.
+
+
+Donate
+------
+
+If you find GfxTablet useful, please feel free to send a donation:
+
+**PayPal:** [info@bitfire.at](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=ZT8F5NRCBDB2C&no_note=0&no_shipping=1&currency_code=EUR&item_name=GfxTablet+donation)
+
+**BitCoin:** 1KSCy7RHztKuhW9fLLaUYqdwdC2iwbejZU
+
+**Wire transfer:**
+
+* Account name: bitfire web engineering
+* IBAN: AT81 1400 0272 1006 2055
+* BIC: BAWAATWW
+* Reference text: GfxTablet
+
+[![Flattr this repository](https://api.flattr.com/button/flattr-badge-large.png)](https://flattr.com/submit/auto?user_id=bitfire&url=https://github.com/rfc2822/GfxTablet&title=GfxTablet&language=&tags=github&category=software)

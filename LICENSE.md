@@ -1,5 +1,5 @@
 
-Author: Richard Hirner <hirner@bitfire.at>
+Author: Ricki Hirner <hirner@bitfire.at>
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
