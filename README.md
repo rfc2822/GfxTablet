@@ -3,7 +3,7 @@ To be informed about updates:
 
 * [follow GfxTablet on Twitter](https://twitter.com/GfxTablet)
 * [subscribe to our RSS/Atom feed](http://feeds.feedburner.com/GfxTablet)
-* [subscribe to email notifications](http://feedburner.google.com/fb/a/mailverify?uri=GfxTablet)
+* [ICSdroid forum](https://forums.bitfire.at/category/3/gfxtablet)
 
 
 What is GfxTablet?
@@ -28,6 +28,8 @@ for instance _use GIMP with your Android tablet as a graphics tablet_
 (even pressure-sensitive, if your hardware supports it).
 
 Homepage: https://rfc2822.github.io/GfxTablet/
+
+Help and discussion: https://forums.bitfire.at/category/3/gfxtablet
 
 If you want to support this project, please consider a [donation](#donate).
 
@@ -58,7 +60,7 @@ Requirements
 If you use Xorg (you probably do):
 
 * Xorg-evdev module loaded and configured – probably on by default, but if it doesn't work, you may
-  need to activate the module: see https://github.com/rfc2822/GfxTablet/issues/7#issuecomment-13338216
+  need to [activate the module](https://forums.bitfire.at/topic/15/gfxtablet-and-archlinux).
 
 
 Installation
@@ -125,7 +127,7 @@ Using with multiple monitors
 ----------------------------
 
 If you're using multiple screens, you can assign the Network Tablet device to a specific screen
-once it's running (thanks to @symbally and @Evi1M4chine, https://github.com/rfc2822/GfxTablet/issues/30#issuecomment-30605827):
+once it's running (thanks to @symbally and @Evi1M4chine, see https://forums.bitfire.at/topic/82/multi-monitor-problem):
 
 1. Use `xrandr` to identify which monitor you would like to have the stylus picked up on. In this example, `DVI-I-1`
    is the display to assign.
@@ -135,13 +137,6 @@ Known issues
 ------------
 
 * With Gnome 3.16 (as shipped with Fedora 22), [Gnome Shell crashes when using GfxTablet](https://bugzilla.redhat.com/show_bug.cgi?id=1209008).
-
-
-Support
-=======
-
-For bug reports, please use the [Github issues page](https://github.com/rfc2822/GfxTablet/issues)
-or just fork the repository, fix the bug and send a merge request.
 
 
 Donate
