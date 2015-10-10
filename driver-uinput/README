@@ -1,0 +1,49 @@
+GfxTablet network manager daemon.
+Protocol version 1.0 -- quadcore-dev proposed commit.
+
+This code has been modified from it's original source on
+GitHub -- https://github.com/edtrind/GfxTablet-master
+Author:  bitfire web engineering/GfxTablet -- Richard Hirner
+http://rfc2822.github.io/GfxTablet/
+
+Modified by quadcore-dev/loopyd - Robert Smith
+lupinedreamexpress@gmail.com
+
+This version provides higher compatability for GIMP (by
+converting the output values to larger ones so that the
+pressure curve function becomes usable in "Input Settings"
+-> "Network Tablet".
+
+It also contains some eyecandy, a visible pressure bar that
+indicates how hard your last stroke was.  It does not spam
+your terminal window with the events, but will exit with
+an error code if there is a problem.
+
+This code was tested on Ubuntu 14.04 LTS Studio and is
+verified working on this platform.
+
+I am not responsible if my code causes your GfxTablet
+daemon to stop functioning, your computer to catch fire,
+or your pets to die from said fire, etc.
+
+---
+
+Modified:
+
+	networktablet.c	- network tablet daemon
+
+Added:
+
+	qccolor.h	- eyecandy for your terminal
+	README 		- this file
+
+Deleted:
+
+	None
+
+--
+
+Have a wonderful life!
+
+~quadcore-dev/loopyd
+"We write code because we like to."
