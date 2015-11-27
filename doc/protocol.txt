@@ -20,7 +20,11 @@ Packet structure, uses network byte order (big endian):
   1  unsigned int16     pressure (accepting full range 0..65535, but will clip to 32768 == pressure 1.0f on Android device)
 
   when type == button event:
-  1  signed int8        number of button, starting with 0
+  1  signed int8     button id:
+                       -1: stylus in range pseudo-button
+                        0: left click / stylus in contact / button 0
+                        1: extra button 1
+                        2: extra button 2
   1  byte             button status:
                         0 button is released ("up")
                         1 button is pressed ("down")
