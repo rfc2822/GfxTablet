@@ -10,6 +10,7 @@
 #include <arpa/inet.h>
 #include <linux/input.h>
 #include <linux/uinput.h>
+#include <stdint.h>
 #include "protocol.h"
 
 #define die(str, args...) { \
@@ -52,11 +53,11 @@ void init_device(int fd)
 	uidev.id.product = 0x1;
 	uidev.id.version = 1;
 	uidev.absmin[ABS_X] = 0;
-	uidev.absmax[ABS_X] = SHRT_MAX;
+	uidev.absmax[ABS_X] = UINT16_MAX;
 	uidev.absmin[ABS_Y] = 0;
-	uidev.absmax[ABS_Y] = SHRT_MAX;
+	uidev.absmax[ABS_Y] = UINT16_MAX;
 	uidev.absmin[ABS_PRESSURE] = 0;
-	uidev.absmax[ABS_PRESSURE] = SHRT_MAX/2;
+	uidev.absmax[ABS_PRESSURE] = INT16_MAX;
 	if (write(fd, &uidev, sizeof(uidev)) < 0)
 		die("error: write");
 
@@ -132,7 +133,7 @@ int main(void)
 		ev_pkt.x = ntohs(ev_pkt.x);
 		ev_pkt.y = ntohs(ev_pkt.y);
 		ev_pkt.pressure = ntohs(ev_pkt.pressure);
-		printf("x: %hi, y: %hi, pressure: %hi\n", ev_pkt.x, ev_pkt.y, ev_pkt.pressure);
+		printf("x: %hu, y: %hu, pressure: %hu\n", ev_pkt.x, ev_pkt.y, ev_pkt.pressure);
 
 		send_event(device, EV_ABS, ABS_X, ev_pkt.x);
 		send_event(device, EV_ABS, ABS_Y, ev_pkt.y);

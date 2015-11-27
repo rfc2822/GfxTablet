@@ -1,5 +1,5 @@
 
-networktablet : networktablet.c protocol.h
+networktablet : networktablet.c
 
 clean :
 	rm networktablet
