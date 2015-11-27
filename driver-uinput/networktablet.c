@@ -35,6 +35,12 @@ void init_device(int fd)
 		die("error: ioctl UI_SET_EVBIT EV_KEY");
 	if (ioctl(fd, UI_SET_KEYBIT, BTN_TOUCH) < 0)
 		die("error: ioctl UI_SET_KEYBIT");
+	if (ioctl(fd, UI_SET_KEYBIT, BTN_TOOL_PEN) < 0)
+		die("error: ioctl UI_SET_KEYBIT");
+	if (ioctl(fd, UI_SET_KEYBIT, BTN_STYLUS) < 0)
+		die("error: ioctl UI_SET_KEYBIT");
+	if (ioctl(fd, UI_SET_KEYBIT, BTN_STYLUS2) < 0)
+		die("error: ioctl UI_SET_KEYBIT");
 
 	// enable 2 main axes + pressure (absolute positioning)
 	if (ioctl(fd, UI_SET_EVBIT, EV_ABS) < 0)
@@ -144,8 +150,19 @@ int main(void)
 				send_event(device, EV_SYN, SYN_REPORT, 1);
 				break;
 			case EVENT_TYPE_BUTTON:
+				// stylus hovering
+				if (ev_pkt.button == -1)
+					send_event(device, EV_KEY, BTN_TOOL_PEN, ev_pkt.down);
+				// stylus touching
 				if (ev_pkt.button == 0)
 					send_event(device, EV_KEY, BTN_TOUCH, ev_pkt.down);
+				// button 1
+				if (ev_pkt.button == 1)
+					send_event(device, EV_KEY, BTN_STYLUS, ev_pkt.down);
+				// button 2
+				if (ev_pkt.button == 2)
+					send_event(device, EV_KEY, BTN_STYLUS2, ev_pkt.down);
+				printf("sent button: %hhi, %hhu\n", ev_pkt.button, ev_pkt.down);
 				send_event(device, EV_SYN, SYN_REPORT, 1);
 				break;
 
