@@ -15,7 +15,7 @@ public class NetEvent {
 		TYPE_DISCONNECT
 	}
 	static final String signature = "GfxTablet";
-	static final short protocol_version = 1;
+	static final short protocol_version = 2;
 	
 	final Type type;
 	short x, y, pressure;

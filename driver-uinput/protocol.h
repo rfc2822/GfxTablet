@@ -1,7 +1,6 @@
-
 #define GFXTABLET_PORT 40118
 
-#define PROTOCOL_VERSION 1
+#define PROTOCOL_VERSION 2
 
 
 #pragma pack(push)
@@ -13,16 +12,16 @@
 struct event_packet
 {
 	char signature[9];
-	unsigned short version;
-	char type;	/* EVENT_TYPE_... */
+	uint16_t version;
+	uint8_t type;	/* EVENT_TYPE_... */
 	struct {	/* required */
-		short x, y;
-		short pressure;
+		uint16_t x, y;
+		uint16_t pressure;
 	};
 
 	struct {	/* only required for EVENT_TYPE_BUTTON */
-		char button;		/* number of button, beginning with 1 */
-		char down;		/* 1 = button down, 0 = button up */
+		int8_t button;		/* number of button, beginning with 1 */
+		int8_t down;		/* 1 = button down, 0 = button up */
 	};
 };
 

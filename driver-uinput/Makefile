@@ -2,7 +2,7 @@ TARGET = networktablet
 PREFIX = /usr/local
 BINDIR = $(PREFIX)/bin
 
-networktablet : networktablet.c protocol.h
+networktablet : networktablet.c
 
 clean :
 	rm -f networktablet

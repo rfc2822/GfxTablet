@@ -124,17 +124,18 @@ public class CanvasView extends View implements SharedPreferences.OnSharedPrefer
 		return false;
 	}
 	
-	
+	// these overflow and wrap around to negative short values, but thankfully Java will continue
+	// on regardless, so we can just ignore Java's interpretation of them and send them anyway.
 	short normalizeX(float x) {
-		return (short)(Math.min(Math.max(0, x), maxX) * Short.MAX_VALUE/maxX);
+		return (short)(Math.min(Math.max(0, x), maxX) * 2*Short.MAX_VALUE/maxX);
 	}
 	
 	short normalizeY(float x) {
-		return (short)(Math.min(Math.max(0, x), maxY) * Short.MAX_VALUE/maxY);
+		return (short)(Math.min(Math.max(0, x), maxY) * 2*Short.MAX_VALUE/maxY);
 	}
 	
 	short normalizePressure(float x) {
-		return (short)(Math.min(Math.max(0, x), 2.0) * Short.MAX_VALUE/2.0);
+		return (short)(Math.min(Math.max(0, x), 2.0) * Short.MAX_VALUE);
 	}
 
 }

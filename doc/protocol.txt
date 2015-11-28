@@ -2,26 +2,26 @@ Network protocol used by GfxTablet
 
 
 
-Version 1
+Version 2
 ---------
 
 GfxTablet app sends UDP packets to port 40118 of the destination host.
 
 Packet structure, uses network byte order (big endian):
 
-  9  bytes    "GfxTablet"
-  1  word     version number
-  1  byte     type:
-                0 motion event (hovering)
-                1 button event (finger, pen etc. touches surface)
+  9  bytes             "GfxTablet"
+  1  unsigned int16     version number
+  1  byte             event type:
+                        0: motion event (hovering)
+                        1: button event (finger, pen etc. touches surface)
 
-  1  word     x (using full range: 0..65535)
-  1  word     y (using full range: 0..65535)
-  1  word     pressure (using full range 0..65535, 32768 == pressure 1.0f on Android device)
+  1  unsigned int16     x (using full range: 0..65535)
+  1  unsigned int16     y (using full range: 0..65535)
+  1  unsigned int16     pressure (accepting full range 0..65535, but will clip to 32768 == pressure 1.0f on Android device)
 
   when type == button event:
-  1  byte     number of button, starting with 0
-  1  byte     button status:
-                0 button is released ("up")
-                1 button is pressed ("down")
+  1  signed int8        number of button, starting with 0
+  1  byte             button status:
+                        0 button is released ("up")
+                        1 button is pressed ("down")
 
