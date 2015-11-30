@@ -20,8 +20,21 @@ Packet structure, uses network byte order (big endian):
   1  unsigned int16     pressure (accepting full range 0..65535, but will clip to 32768 == pressure 1.0f on Android device)
 
   when type == button event:
-  1  signed int8        number of button, starting with 0
+  1  signed int8     button id:
+                       -1: stylus in range pseudo-button
+                        0: left click / stylus in contact / button 0
+                        1: extra button 1
+                        2: extra button 2
   1  byte             button status:
                         0 button is released ("up")
                         1 button is pressed ("down")
 
+XInput will ignore BTN_TOUCH events if they are not preceeded by
+a BTN_TOOL_PEN event -- this would never happen for a real stylus,
+because it would imply the stylus is touching the pad, yet too far
+away from the pad to be detected.
+
+A GfxTablet client must therefore be careful to send a "Button -1
+down" event before a "Button 0 down" event, to emulate this
+behaviour. If they are faking these events, they'll probably want
+to likewise send a "Button -1 up" event after a "Button 0 up" event.

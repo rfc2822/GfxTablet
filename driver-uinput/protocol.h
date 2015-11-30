@@ -20,7 +20,11 @@ struct event_packet
 	};
 
 	struct {	/* only required for EVENT_TYPE_BUTTON */
-		int8_t button;		/* number of button, beginning with 1 */
+		int8_t button;		/* button id:
+								-1 = stylus in range,
+								 0 = tap/left click/button 0,
+								 1 = button 1,
+								 2 = button 2 */
 		int8_t down;		/* 1 = button down, 0 = button up */
 	};
 };
