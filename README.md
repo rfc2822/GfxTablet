@@ -2,8 +2,7 @@
 To be informed about updates:
 
 * [follow GfxTablet on Twitter](https://twitter.com/GfxTablet)
-* [subscribe to our RSS/Atom feed](http://feeds.feedburner.com/GfxTablet)
-* [ICSdroid forum](https://forums.bitfire.at/category/3/gfxtablet)
+* [GfxTablet forum](https://forums.bitfire.at/category/3/gfxtablet)
 
 
 What is GfxTablet?
@@ -27,11 +26,11 @@ So, you can use your Android tablet or smartphone to control the PC and,
 for instance _use GIMP with your Android tablet as a graphics tablet_
 (even pressure-sensitive, if your hardware supports it).
 
-Homepage: https://rfc2822.github.io/GfxTablet/
+Homepage: https://gfxtablet.bitfire.at
 
 Help and discussion: https://forums.bitfire.at/category/3/gfxtablet
 
-If you want to support this project, please consider a [donation](#donate).
+If you want to support this project, please consider a [donation](https://gfxtablet.bitfire.at/donate).
 
 
 License
@@ -74,7 +73,7 @@ Part 1: uinput driver
 
 On your PC, either download one of these binaries (don't forget to `chmod a+x` it):
 
-* [networktablet 64-bit, dynamically linked, tested with Fedora 18 and Ubuntu 15.04](https://github.com/rfc2822/GfxTablet/blob/binaries/networktablet-x86_64?raw=true)
+* [networktablet 64-bit, dynamically linked, tested with Fedora 23](https://github.com/rfc2822/GfxTablet/releases/download/1.4/networktablet)
 
 or compile it yourself (don't be afraid, it's only one file)
 
@@ -104,7 +103,7 @@ Part 2: App
 You can either
 
 1. compile the app from the source code in the Git repository, or
-2. [download it from the open-source market F-Droid](https://f-droid.org/repository/browse/?fdcategory=Multimedia&fdid=at.bitfire.gfxtablet) (**recommended**), or
+2. [download it from the open-source market F-Droid](https://f-droid.org/repository/browse/?fdcategory=Multimedia&fdid=at.bitfire.gfxtablet), or
 3. download it from Samsung Galaxy Apps, or
 4. [download it directly from Github](https://github.com/rfc2822/GfxTablet/releases), or
 5. [download it from Google Play](https://play.google.com/store/apps/details?id=at.bitfire.gfxtablet)
@@ -142,17 +141,6 @@ Known issues
 Donate
 ------
 
-If you find GfxTablet useful, please feel free to send a donation:
+If you find GfxTablet useful, please feel free to [send a donation](https://gfxtablet.bitfire.at/donate).
 
-**PayPal:** [info@bitfire.at](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=ZT8F5NRCBDB2C&no_note=0&no_shipping=1&currency_code=EUR&item_name=GfxTablet+donation)
-
-**BitCoin:** 1KSCy7RHztKuhW9fLLaUYqdwdC2iwbejZU
-
-**Wire transfer:**
-
-* Account name: bitfire web engineering
-* IBAN: AT81 1400 0272 1006 2055
-* BIC: BAWAATWW
-* Reference text: GfxTablet
-
-[![Flattr this repository](https://api.flattr.com/button/flattr-badge-large.png)](https://flattr.com/submit/auto?user_id=bitfire&url=https://github.com/rfc2822/GfxTablet&title=GfxTablet&language=&tags=github&category=software)
+[![Flattr GfxTablet](https://api.flattr.com/button/flattr-badge-large.png)](https://flattr.com/submit/auto?user_id=bitfire&url=https://gfxtablet.bitfire.at&title=GfxTablet&category=software)
