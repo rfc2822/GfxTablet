@@ -26,7 +26,7 @@ public class CanvasActivity extends AppCompatActivity implements View.OnSystemUi
     private static final int RESULT_LOAD_IMAGE = 1;
     private static final String TAG = "GfxTablet.Canvas";
 
-    final Uri homepageUri = Uri.parse(("https://rfc2822.github.io/GfxTablet/"));
+    final Uri homepageUri = Uri.parse(("https://gfxtablet.bitfire.at"));
 
     NetworkClient netClient;
 
@@ -90,7 +90,7 @@ public class CanvasActivity extends AppCompatActivity implements View.OnSystemUi
     }
 
     public void showDonate(MenuItem item) {
-        startActivity(new Intent(Intent.ACTION_VIEW, homepageUri.buildUpon().fragment("donate").build()));
+        startActivity(new Intent(Intent.ACTION_VIEW, homepageUri.buildUpon().appendPath("donate").build()));
     }
 
     public void showSettings(MenuItem item) {
