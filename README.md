@@ -73,7 +73,7 @@ Part 1: uinput driver
 
 On your PC, either download one of these binaries (don't forget to `chmod a+x` it):
 
-* [networktablet 64-bit, dynamically linked, tested with Fedora 23](https://github.com/rfc2822/GfxTablet/releases/download/1.4/networktablet)
+* [networktablet 64-bit, dynamically linked, tested with Fedora 23](https://github.com/rfc2822/GfxTablet/releases/download/android-app-1.4/networktablet)
 
 or compile it yourself (don't be afraid, it's only one file)
 
