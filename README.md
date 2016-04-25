@@ -2,7 +2,7 @@
 To be informed about updates:
 
 * [follow GfxTablet on Twitter](https://twitter.com/GfxTablet)
-* [GfxTablet forum](https://forums.bitfire.at/category/3/gfxtablet)
+* [GfxTablet forums](https://gfxtablet.bitfire.at/forums)
 
 
 What is GfxTablet?
@@ -28,9 +28,7 @@ for instance _use GIMP with your Android tablet as a graphics tablet_
 
 Homepage: https://gfxtablet.bitfire.at
 
-Help and discussion: https://forums.bitfire.at/category/3/gfxtablet
-
-If you want to support this project, please consider a [donation](https://gfxtablet.bitfire.at/donate).
+Help and discussion: https://gfxtablet.bitfire.at/forums
 
 
 License
@@ -102,11 +100,11 @@ Part 2: App
 
 You can either
 
-1. compile the app from the source code in the Git repository, or
+1. compile the app from the source code in the Github repository, or
 2. [download it from the open-source market F-Droid](https://f-droid.org/repository/browse/?fdcategory=Multimedia&fdid=at.bitfire.gfxtablet), or
-3. download it from Samsung Galaxy Apps, or
+3. download it from Samsung Galaxy Apps (if you have a Samsung device), or
 4. [download it directly from Github](https://github.com/rfc2822/GfxTablet/releases), or
-5. [download it from Google Play](https://play.google.com/store/apps/details?id=at.bitfire.gfxtablet)
+5. ~~[download it from Google Play](https://play.google.com/store/apps/details?id=at.bitfire.gfxtablet)~~ [removed by Google](https://forums.bitfire.at/topic/1071/google-has-removed-gfxtablet-from-google-play)
 
 After installing, enter your host IP in the Settings / Host name and it should be ready.
 
@@ -132,8 +130,8 @@ once it's running (thanks to @symbally and @Evi1M4chine, see https://forums.bitf
    is the display to assign.
 2. Do `xinput map-to-output "$( xinput list --id-only "Network Tablet" )" DVI-I-1`.
 
-Known issues
-------------
+Known problems
+--------------
 
 * With Gnome 3.16 (as shipped with Fedora 22), [Gnome Shell crashes when using GfxTablet](https://bugzilla.redhat.com/show_bug.cgi?id=1209008).
 
@@ -143,4 +141,3 @@ Donate
 
 If you find GfxTablet useful, please feel free to [send a donation](https://gfxtablet.bitfire.at/donate).
 
-[![Flattr GfxTablet](https://api.flattr.com/button/flattr-badge-large.png)](https://flattr.com/submit/auto?user_id=bitfire&url=https://gfxtablet.bitfire.at&title=GfxTablet&category=software)
