@@ -42,35 +42,35 @@ void init_device(int fd){
 
 	// enable synchronization
 	if (ioctl(fd, UI_SET_EVBIT, EV_SYN) < 0)
-		die("error: ioctl UI_SET_EVBIT EV_SYN");
+		die("Failed to set event bit EV_SYN");
 
 	// enable 1 button
 	if (ioctl(fd, UI_SET_EVBIT, EV_KEY) < 0)
-		die("error: ioctl UI_SET_EVBIT EV_KEY");
+		die("Failed to set event bit EV_KEY");
 	if (ioctl(fd, UI_SET_KEYBIT, BTN_TOUCH) < 0)
-		die("error: ioctl UI_SET_KEYBIT");
+		die("Failed to set key bit BTN_TOUCH");
 	if (ioctl(fd, UI_SET_KEYBIT, BTN_TOOL_PEN) < 0)
-		die("error: ioctl UI_SET_KEYBIT");
+		die("Failed to set key bit BTN_TOOL_PEN");
 	if (ioctl(fd, UI_SET_KEYBIT, BTN_STYLUS) < 0)
-		die("error: ioctl UI_SET_KEYBIT");
+		die("Failed to set key bit BTN_STYLUS");
 	if (ioctl(fd, UI_SET_KEYBIT, BTN_STYLUS2) < 0)
-		die("error: ioctl UI_SET_KEYBIT");
+		die("Failed to set key bit BTN_STYLUS2");
 
 	// enable 2 main axes + pressure (absolute positioning)
 	if (ioctl(fd, UI_SET_EVBIT, EV_ABS) < 0)
-		die("error: ioctl UI_SET_EVBIT EV_ABS");
+		die("Failed to set event bit EV_ABS");
 	if (ioctl(fd, UI_SET_ABSBIT, ABS_X) < 0)
-		die("error: ioctl UI_SETEVBIT ABS_X");
+		die("Failed to set absolute bit ABS_X");
 	if (ioctl(fd, UI_SET_ABSBIT, ABS_Y) < 0)
-		die("error: ioctl UI_SETEVBIT ABS_Y");
+		die("Failed to set absolute bit ABS_Y");
 	if (ioctl(fd, UI_SET_ABSBIT, ABS_PRESSURE) < 0)
-		die("error: ioctl UI_SETEVBIT ABS_PRESSURE");
+		die("Failed to set absolute bit ABS_PRESSURE");
 
 	if (write(fd, &uidev, sizeof(uidev)) < 0)
-		die("error: write");
+		die("Failed to write device description");
 
 	if (ioctl(fd, UI_DEV_CREATE) < 0)
-		die("error: ioctl");
+		die("Failed to create new input device");
 }
 
 int prepare_socket(char* bindhost, char* port){
@@ -88,7 +88,7 @@ int prepare_socket(char* bindhost, char* port){
 	status = getaddrinfo(bindhost, port, &hints, &info);
 	if(status){
 		fprintf(stderr, "Failed to get socket info for %s port %s: %s\n", bindhost, port, gai_strerror(status));
-		return -1;
+		die("Failed to create listening socket");
 	}
 
 	for(addr_it = info; addr_it != NULL; addr_it = addr_it->ai_next){
@@ -118,10 +118,11 @@ int prepare_socket(char* bindhost, char* port){
 
 	freeaddrinfo(info);
 
-	if(!addr_it){
-		fprintf(stderr, "Failed to create listening socket for %s port %s\n", bindhost, port);
-		return -1;
+	if(!addr_it || fd < 0){
+		die("Failed to create listening socket");
 	}
+
+	printf("Now listening on %s port %s\n", bindhost, port);
 	return fd;
 }
 
@@ -132,7 +133,7 @@ void send_event(int device, int type, int code, int value){
 		.value = value
 	};
 	if (write(device, &ev, sizeof(ev)) < 0)
-		die("error: write()");
+		die("Failed to write event to device");
 }
 
 void handle_signal(int signal){
@@ -142,22 +143,18 @@ void handle_signal(int signal){
 int main(int argc, char** argv){
 	int device;
 	struct event_packet ev_pkt;
+	printf("GfxTablet driver (protocol version %u) starting\n", PROTOCOL_VERSION);
 
 	if ((device = open("/dev/uinput", O_WRONLY | O_NONBLOCK)) < 0)
-		die("error: open");
+		die("Failed to open input device node");
 
 	init_device(device);
 	udp_socket = prepare_socket(argc > 1 ? argv[1] : GFXTABLET_DEFAULT_HOST, argc > 2 ? argv[2] : GFXTABLET_DEFAULT_PORT);
-
-	printf("GfxTablet driver (protocol version %u) is ready and listening\n", PROTOCOL_VERSION);
 
 	signal(SIGINT, handle_signal);
 	signal(SIGTERM, handle_signal);
 
 	while (recv(udp_socket, &ev_pkt, sizeof(ev_pkt), 0) >= 9) {		// every packet has at least 9 bytes
-		printf(".");
-		fflush(stdout);
-
 		if (memcmp(ev_pkt.signature, "GfxTablet", 9) != 0) {
 			fprintf(stderr, "\nIgnoring a malformed packet\n");
 			continue;
@@ -172,7 +169,7 @@ int main(int argc, char** argv){
 		ev_pkt.x = ntohs(ev_pkt.x);
 		ev_pkt.y = ntohs(ev_pkt.y);
 		ev_pkt.pressure = ntohs(ev_pkt.pressure);
-		printf("x: %hu, y: %hu, pressure: %hu\n", ev_pkt.x, ev_pkt.y, ev_pkt.pressure);
+		printf("Event x: %hu, y: %hu, pressure: %hu\n", ev_pkt.x, ev_pkt.y, ev_pkt.pressure);
 
 		send_event(device, EV_ABS, ABS_X, ev_pkt.x);
 		send_event(device, EV_ABS, ABS_Y, ev_pkt.y);
@@ -183,6 +180,7 @@ int main(int argc, char** argv){
 				send_event(device, EV_SYN, SYN_REPORT, 1);
 				break;
 			case EVENT_TYPE_BUTTON:
+				printf("Button %hhi event %hhu\n", ev_pkt.button, ev_pkt.down);
 				// stylus hovering
 				if (ev_pkt.button == -1)
 					send_event(device, EV_KEY, BTN_TOOL_PEN, ev_pkt.down);
@@ -195,7 +193,6 @@ int main(int argc, char** argv){
 				// button 2
 				if (ev_pkt.button == 2)
 					send_event(device, EV_KEY, BTN_STYLUS2, ev_pkt.down);
-				printf("sent button: %hhi, %hhu\n", ev_pkt.button, ev_pkt.down);
 				send_event(device, EV_SYN, SYN_REPORT, 1);
 				break;
 		}
