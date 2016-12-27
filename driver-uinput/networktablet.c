@@ -1,30 +1,44 @@
-
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 #include <signal.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <limits.h>
-#include <arpa/inet.h>
 #include <linux/input.h>
 #include <linux/uinput.h>
-#include <stdint.h>
 #include "protocol.h"
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
 
 #define die(str, args...) { \
 	perror(str); \
 	exit(EXIT_FAILURE); \
 }
 
-
 int udp_socket;
 
-
-void init_device(int fd)
-{
-	struct uinput_user_dev uidev;
+void init_device(int fd){
+	struct uinput_user_dev uidev = {
+		.name = "Network Tablet",
+		.id = {
+			.bustype = BUS_VIRTUAL,
+			.vendor = 0x1,
+			.product = 0x1,
+			.version = 1
+		},
+		.absmin = {
+			0
+		},
+		.absmax = {
+			[ABS_X] = UINT16_MAX,
+			[ABS_Y] = UINT16_MAX,
+			[ABS_PRESSURE] = UINT16_MAX
+		}
+	};
 
 	// enable synchronization
 	if (ioctl(fd, UI_SET_EVBIT, EV_SYN) < 0)
@@ -52,18 +66,6 @@ void init_device(int fd)
 	if (ioctl(fd, UI_SET_ABSBIT, ABS_PRESSURE) < 0)
 		die("error: ioctl UI_SETEVBIT ABS_PRESSURE");
 
-	memset(&uidev, 0, sizeof(uidev));
-	snprintf(uidev.name, UINPUT_MAX_NAME_SIZE, "Network Tablet");
-	uidev.id.bustype = BUS_VIRTUAL;
-	uidev.id.vendor  = 0x1;
-	uidev.id.product = 0x1;
-	uidev.id.version = 1;
-	uidev.absmin[ABS_X] = 0;
-	uidev.absmax[ABS_X] = UINT16_MAX;
-	uidev.absmin[ABS_Y] = 0;
-	uidev.absmax[ABS_Y] = UINT16_MAX;
-	uidev.absmin[ABS_PRESSURE] = 0;
-	uidev.absmax[ABS_PRESSURE] = INT16_MAX;
 	if (write(fd, &uidev, sizeof(uidev)) < 0)
 		die("error: write");
 
@@ -71,42 +73,73 @@ void init_device(int fd)
 		die("error: ioctl");
 }
 
-int prepare_socket()
-{
-	int s;
-	struct sockaddr_in addr;
+int prepare_socket(char* bindhost, char* port){
+	int fd = -1, status, yes = 1;
+	struct addrinfo hints;
+	struct addrinfo* info;
+	struct addrinfo* addr_it;
 
-	if ((s = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
-		die("error: prepare_socket()");
+	memset(&hints, 0, sizeof(hints));
 
-	bzero(&addr, sizeof(struct sockaddr_in));
-	addr.sin_family = AF_INET;
-	addr.sin_port = htons(GFXTABLET_PORT);
-	addr.sin_addr.s_addr = htonl(INADDR_ANY);
+	hints.ai_family = AF_UNSPEC;
+	hints.ai_socktype = SOCK_DGRAM;
+	hints.ai_flags = AI_PASSIVE;
 
-	if (bind(s, (struct sockaddr *)&addr, sizeof(addr)) == -1)
-		die("error: prepare_socket()");
+	status = getaddrinfo(bindhost, port, &hints, &info);
+	if(status){
+		fprintf(stderr, "Failed to get socket info for %s port %s: %s\n", bindhost, port, gai_strerror(status));
+		return -1;
+	}
 
-	return s;
+	for(addr_it = info; addr_it != NULL; addr_it = addr_it->ai_next){
+		fd = socket(addr_it->ai_family, addr_it->ai_socktype, addr_it->ai_protocol);
+		if(fd < 0){
+			continue;
+		}
+
+		yes = 1;
+		if(setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (void*)&yes, sizeof(yes)) < 0){
+			fprintf(stderr, "Failed to set SO_REUSEADDR on socket\n");
+		}
+
+		yes = 1;
+		if(setsockopt(fd, SOL_SOCKET, SO_BROADCAST, (void*)&yes, sizeof(yes)) < 0){
+			fprintf(stderr, "Failed to set SO_BROADCAST on socket\n");
+		}
+
+		status = bind(fd, addr_it->ai_addr, addr_it->ai_addrlen);
+		if(status < 0){
+			close(fd);
+			continue;
+		}
+
+		break;
+	}
+
+	freeaddrinfo(info);
+
+	if(!addr_it){
+		fprintf(stderr, "Failed to create listening socket for %s port %s\n", bindhost, port);
+		return -1;
+	}
+	return fd;
 }
 
-void send_event(int device, int type, int code, int value)
-{
-	struct input_event ev;
-	ev.type = type;
-	ev.code = code;
-	ev.value = value;
+void send_event(int device, int type, int code, int value){
+	struct input_event ev = {
+		.type = type,
+		.code = code,
+		.value = value
+	};
 	if (write(device, &ev, sizeof(ev)) < 0)
 		die("error: write()");
 }
 
-void quit(int signal) {
+void handle_signal(int signal){
 	close(udp_socket);
 }
 
-
-int main(void)
-{
+int main(int argc, char** argv){
 	int device;
 	struct event_packet ev_pkt;
 
@@ -114,19 +147,19 @@ int main(void)
 		die("error: open");
 
 	init_device(device);
-	udp_socket = prepare_socket();
+	udp_socket = prepare_socket(argc > 1 ? argv[1] : GFXTABLET_DEFAULT_HOST, argc > 2 ? argv[2] : GFXTABLET_DEFAULT_PORT);
 
-	printf("GfxTablet driver (protocol version %u) is ready and listening on 0.0.0.0:%u (UDP)\n"
-		"Hint: Make sure that this port is not blocked by your firewall.\n", PROTOCOL_VERSION, GFXTABLET_PORT);
+	printf("GfxTablet driver (protocol version %u) is ready and listening\n", PROTOCOL_VERSION);
 
-	signal(SIGINT, quit);
-	signal(SIGTERM, quit);
+	signal(SIGINT, handle_signal);
+	signal(SIGTERM, handle_signal);
 
 	while (recv(udp_socket, &ev_pkt, sizeof(ev_pkt), 0) >= 9) {		// every packet has at least 9 bytes
-		printf("."); fflush(0);
+		printf(".");
+		fflush(stdout);
 
 		if (memcmp(ev_pkt.signature, "GfxTablet", 9) != 0) {
-			fprintf(stderr, "\nGot unknown packet on port %i, ignoring\n", GFXTABLET_PORT);
+			fprintf(stderr, "\nIgnoring a malformed packet\n");
 			continue;
 		}
 		ev_pkt.version = ntohs(ev_pkt.version);
@@ -165,14 +198,13 @@ int main(void)
 				printf("sent button: %hhi, %hhu\n", ev_pkt.button, ev_pkt.down);
 				send_event(device, EV_SYN, SYN_REPORT, 1);
 				break;
-
 		}
 	}
-	close(udp_socket);
 
 	printf("Removing network tablet from device list\n");
 	ioctl(device, UI_DEV_DESTROY);
 	close(device);
+	close(udp_socket);
 
 	printf("GfxTablet driver shut down gracefully\n");
 	return 0;
