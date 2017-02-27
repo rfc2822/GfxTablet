@@ -21,14 +21,18 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.Toast;
+import at.bitfire.gfxtablet.NetEvent.Type;
 
 public class CanvasActivity extends AppCompatActivity implements View.OnSystemUiVisibilityChangeListener, SharedPreferences.OnSharedPreferenceChangeListener {
     private static final int RESULT_LOAD_IMAGE = 1;
     private static final String TAG = "GfxTablet.Canvas";
+    private static CanvasActivity instance;
+    public static CanvasActivity get() { return instance; }
 
     final Uri homepageUri = Uri.parse(("https://gfxtablet.bitfire.at"));
 
     NetworkClient netClient;
+    NetworkServer netServer;
 
     SharedPreferences preferences;
     boolean fullScreen = false;
@@ -37,6 +41,7 @@ public class CanvasActivity extends AppCompatActivity implements View.OnSystemUi
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        instance = this;
 
         preferences = PreferenceManager.getDefaultSharedPreferences(this);
         preferences.registerOnSharedPreferenceChangeListener(this);
@@ -46,6 +51,10 @@ public class CanvasActivity extends AppCompatActivity implements View.OnSystemUi
         // create network client in a separate thread
         netClient = new NetworkClient(PreferenceManager.getDefaultSharedPreferences(this));
         new Thread(netClient).start();
+        // create network server in a separate thread
+        netServer = new NetworkServer(PreferenceManager.getDefaultSharedPreferences(this));
+        new Thread(netServer).start();
+
         new ConfigureNetworkingTask().execute();
 
         // notify CanvasView of the network client
@@ -75,6 +84,10 @@ public class CanvasActivity extends AppCompatActivity implements View.OnSystemUi
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.activity_canvas, menu);
         return true;
+    }
+
+    public void sendMotionStopSignal(){
+        netClient.getQueue().add(new NetEvent(Type.TYPE_MOTION, (short) 0, (short) 0, (short) 0));
     }
 
     @Override
@@ -166,7 +179,7 @@ public class CanvasActivity extends AppCompatActivity implements View.OnSystemUi
     }
 
     public void clearTemplateImage(MenuItem item) {
-        preferences.edit().remove(SettingsActivity.KEY_TEMPLATE_IMAGE).commit();
+        preferences.edit().remove(SettingsActivity.KEY_TEMPLATE_IMAGE).apply();
         showTemplateImage();
     }
 
@@ -184,7 +197,7 @@ public class CanvasActivity extends AppCompatActivity implements View.OnSystemUi
                 int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
                 String picturePath = cursor.getString(columnIndex);
 
-                preferences.edit().putString(SettingsActivity.KEY_TEMPLATE_IMAGE, picturePath).commit();
+                preferences.edit().putString(SettingsActivity.KEY_TEMPLATE_IMAGE, picturePath).apply();
                 showTemplateImage();
             } finally {
                 cursor.close();
@@ -192,6 +205,9 @@ public class CanvasActivity extends AppCompatActivity implements View.OnSystemUi
         }
     }
 
+    /**
+     * Fits chosen image to screen size.
+     */
     public void showTemplateImage() {
         ImageView template = (ImageView)findViewById(R.id.canvas_template);
         template.setImageDrawable(null);
@@ -200,9 +216,8 @@ public class CanvasActivity extends AppCompatActivity implements View.OnSystemUi
             String picturePath = preferences.getString(SettingsActivity.KEY_TEMPLATE_IMAGE, null);
             if (picturePath != null)
                 try {
-                    // TODO load bitmap efficiently, for intended view size and display resolution
-                    // https://developer.android.com/training/displaying-bitmaps/load-bitmap.html
                     final Drawable drawable = new BitmapDrawable(getResources(), picturePath);
+                    template.setScaleType(ImageView.ScaleType.FIT_XY);
                     template.setImageDrawable(drawable);
                 } catch (Exception e) {
                     Toast.makeText(this, e.getLocalizedMessage(), Toast.LENGTH_LONG).show();

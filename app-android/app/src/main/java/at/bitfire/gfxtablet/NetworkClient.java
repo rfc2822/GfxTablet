@@ -54,7 +54,7 @@ public class NetworkClient implements Runnable {
 				byte[] data = event.toByteArray();
 				DatagramPacket pkt = new DatagramPacket(data, data.length, destAddress, GFXTABLET_PORT);
 				socket.send(pkt);
-			}
+            }
 		} catch (Exception e) {
 			Log.e("GfxTablet", "motionQueue failed: " + e.getMessage());
 		}

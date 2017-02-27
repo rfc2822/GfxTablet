@@ -56,8 +56,8 @@ public class CanvasView extends View implements SharedPreferences.OnSharedPrefer
     protected void setBackground() {
         if (settings.getBoolean(SettingsActivity.KEY_DARK_CANVAS, false))
             setBackgroundColor(Color.BLACK);
-        else
-            setBackgroundResource(R.drawable.bg_grid_pattern);
+        //else
+            //setBackgroundResource(R.drawable.bg_grid_pattern); //<-- Add this as option?
     }
 
     protected void setInputMethods() {

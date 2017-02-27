@@ -1,4 +1,10 @@
 
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#include <X11/X.h>
+#include <cairo.h>
+#include <cairo-xlib.h>
+#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -19,7 +25,15 @@
 }
 
 
-int udp_socket;
+int udp_socket, sending;
+
+typedef struct event_packet event_packet;
+typedef struct sockaddr_in sockaddr_in;
+
+typedef struct sending_t {
+	sockaddr_in from;
+	int slen;
+} sending_t;
 
 
 void init_device(int fd)
@@ -74,12 +88,12 @@ void init_device(int fd)
 int prepare_socket()
 {
 	int s;
-	struct sockaddr_in addr;
+	sockaddr_in addr;
 
 	if ((s = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
 		die("error: prepare_socket()");
 
-	bzero(&addr, sizeof(struct sockaddr_in));
+	bzero(&addr, sizeof(sockaddr_in));
 	addr.sin_family = AF_INET;
 	addr.sin_port = htons(GFXTABLET_PORT);
 	addr.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -104,11 +118,74 @@ void quit(int signal) {
 	close(udp_socket);
 }
 
+void msleep(int ms){
+	struct timespec req = {0};
+	req.tv_sec = 0;
+	req.tv_nsec = ms * 1000000L;
+	nanosleep(&req, (struct timespec *)NULL);
+}
 
-int main(void)
-{
+void *send_current_screen(void *arg){
+	sending_t *args = (sending_t*) arg;
+	sockaddr_in from = args->from;
+	int slen = args->slen;
+	Display *disp = XOpenDisplay(":0");
+
+	if (sending || !disp) {
+		return NULL;
+	}
+	printf("\nsend_thread\n");
+
+	msleep(300);
+	sending=1;
+	Window root;
+	cairo_surface_t *surface;
+	int scr;
+	scr = DefaultScreen(disp);
+	root = DefaultRootWindow(disp);
+	/* get the root surface on given display */
+	surface = cairo_xlib_surface_create(disp, root, DefaultVisual(disp, scr),
+													DisplayWidth(disp, scr),
+													DisplayHeight(disp, scr));
+	/* right now, the tool only outputs PNG images */
+	cairo_surface_write_to_png( surface, "test.png" );
+	/* free the memory*/
+	cairo_surface_destroy(surface);
+
+	FILE *istream;
+	if ( (istream = fopen("test.png", "r" ) ) == NULL ){
+		die("file non-existant!");
+	}
+	from.sin_port = htons(GFXTABLET_PORT);
+	int max=60000;
+	char buff[max+30];
+	int n=1;
+	while(fread(buff,sizeof(char),max,istream) != 0){
+		printf("Send packet to %s:%d\n", inet_ntoa(from.sin_addr), ntohs(from.sin_port));
+		buff[max +29] = n;
+		if (sendto(udp_socket, buff, sizeof(buff), 0, (struct sockaddr*) &from, slen) == -1){
+			die("sendto()");
+		}
+		n++;
+		for (int r = 0; r <= max ; r++){
+			buff[r] = 0;
+		}
+	}
+	fclose (istream );
+	char buf[1];
+	buf[0] = n-1;
+	if (sendto(udp_socket, buf, strlen(buff)+1, 0, (struct sockaddr*) &from, slen) == -1){
+		die("sendto()");
+	}
+	sending=0;
+}
+
+int main(void){
 	int device;
-	struct event_packet ev_pkt;
+	sending=0;
+	event_packet ev_pkt;
+	sending_t sock_t;
+	pthread_t ev_retreive_t, screen_send_t;
 
 	if ((device = open("/dev/uinput", O_WRONLY | O_NONBLOCK)) < 0)
 		die("error: open");
@@ -122,7 +199,7 @@ int main(void)
 	signal(SIGINT, quit);
 	signal(SIGTERM, quit);
 
-	while (recv(udp_socket, &ev_pkt, sizeof(ev_pkt), 0) >= 9) {		// every packet has at least 9 bytes
+	while (recvfrom(udp_socket, &ev_pkt, sizeof(event_packet), 0, (struct sockaddr *) &sock_t.from, &sock_t.slen) >= 9) {		// every packet has at least 9 bytes
 		printf("."); fflush(0);
 
 		if (memcmp(ev_pkt.signature, "GfxTablet", 9) != 0) {
@@ -165,7 +242,13 @@ int main(void)
 				printf("sent button: %hhi, %hhu\n", ev_pkt.button, ev_pkt.down);
 				send_event(device, EV_SYN, SYN_REPORT, 1);
 				break;
+		}
 
+		if (ev_pkt.pressure == 0 && memcmp(inet_ntoa(sock_t.from.sin_addr), "0.0.0.0", 7) != 0) {
+			if(pthread_create(&screen_send_t, NULL, send_current_screen, &sock_t)) {
+				fprintf(stderr, "Error creating thread\n");
+				return 1;
+			}
 		}
 	}
 	close(udp_socket);
