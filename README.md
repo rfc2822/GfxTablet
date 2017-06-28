@@ -94,7 +94,7 @@ which use the device may be confused by that and could crash.
 
 `networktablet` will display a status line for every touch/motion event it receives.
 
-Addendum:
+### "Network Tablet not listed" workaround ###
 
 The `python-app` directory contains an optional program implementing a workaround for the common problem of `networktablet` executing and connecting and receiving input events but GIMP being unable to see a device named "Network Tablet". You may need to install the dependencies with `pip3 install -r requirements.txt`
 
@@ -143,4 +143,5 @@ Donate
 ------
 
 If you find GfxTablet useful, please feel free to [send a donation](https://gfxtablet.bitfire.at/donate).
+
 
