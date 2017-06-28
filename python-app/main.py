@@ -96,22 +96,25 @@ def main():
 
     movement_manager = PositionManager("Galaxy Note 4")
     while True:
-        line = p.stdout.readline().decode("utf-8")
-        if not line:
-            break
         try:
-            e = process_line(line)
-            print(e)
-            movement_manager.consume(e)
-            dx, dy = movement_manager.deltas
-            pyautogui.moveRel(dx, dy, 0)
+            line = p.stdout.readline().decode("utf-8")
+            if not line:
+                break
+            try:
+                e = process_line(line)
+                print(e)
+                movement_manager.consume(e)
+                dx, dy = movement_manager.deltas
+                pyautogui.moveRel(dx, dy, 0)
 
-            if movement_manager.button_states.get(0, None) == 1:
-                pyautogui.mouseDown(button="left")
-            else:
-                pyautogui.mouseUp(button="left")
-        except ValueError:
-            pass
+                if movement_manager.button_states.get(0, None) == 1:
+                    pyautogui.mouseDown(button="left")
+                else:
+                    pyautogui.mouseUp(button="left")
+            except ValueError:
+                pass
+        except KeyboardInterrupt:
+            quit()
 
 
 if __name__ == '__main__':
