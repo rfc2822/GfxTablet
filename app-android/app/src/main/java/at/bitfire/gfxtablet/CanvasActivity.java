@@ -162,17 +162,6 @@ public class CanvasActivity extends AppCompatActivity implements View.OnSystemUi
         return preferences.getString(SettingsActivity.KEY_TEMPLATE_IMAGE, null);
     }
 
-    public void setTemplateImage(MenuItem item) {
-        if (getTemplateImagePath() == null)
-            selectTemplateImage(item);
-        else {
-            // template image already set, show popup
-            PopupMenu popup = new PopupMenu(this, findViewById(R.id.menu_set_template_image));
-            popup.getMenuInflater().inflate(R.menu.set_template_image, popup.getMenu());
-            popup.show();
-        }
-    }
-
     public void selectTemplateImage(MenuItem item) {
         Intent i = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         startActivityForResult(i, RESULT_LOAD_IMAGE);
