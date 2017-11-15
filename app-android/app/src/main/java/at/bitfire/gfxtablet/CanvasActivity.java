@@ -3,6 +3,8 @@ package at.bitfire.gfxtablet;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -98,14 +100,6 @@ public class CanvasActivity extends AppCompatActivity implements View.OnSystemUi
             super.onBackPressed();
     }
 
-    public void showAbout(MenuItem item) {
-        startActivity(new Intent(Intent.ACTION_VIEW, homepageUri));
-    }
-
-    public void showDonate(MenuItem item) {
-        startActivity(new Intent(Intent.ACTION_VIEW, homepageUri.buildUpon().appendPath("donate").build()));
-    }
-
     public void showSettings(MenuItem item) {
         startActivityForResult(new Intent(this, SettingsActivity.class), 0);
     }
@@ -123,9 +117,13 @@ public class CanvasActivity extends AppCompatActivity implements View.OnSystemUi
         }
     }
 
+    // refresh methods
+    public void refreshBackground(MenuItem item) {
+        netClient.getQueue().add(new NetEvent(Type.TYPE_MOTION, (short) 0, (short) 0, (short) 0, -1, false));
+    }
+
 
     // full-screen methods
-
     public void switchFullScreen(MenuItem item) {
         final View decorView = getWindow().getDecorView();
         int uiFlags = decorView.getSystemUiVisibility();
@@ -156,61 +154,23 @@ public class CanvasActivity extends AppCompatActivity implements View.OnSystemUi
     }
 
 
-    // template image logic
-
-    private String getTemplateImagePath() {
-        return preferences.getString(SettingsActivity.KEY_TEMPLATE_IMAGE, null);
-    }
-
-    public void selectTemplateImage(MenuItem item) {
-        Intent i = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        startActivityForResult(i, RESULT_LOAD_IMAGE);
-    }
-
-    public void clearTemplateImage(MenuItem item) {
-        preferences.edit().remove(SettingsActivity.KEY_TEMPLATE_IMAGE).apply();
-        showTemplateImage();
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == RESULT_LOAD_IMAGE && resultCode == RESULT_OK && data != null) {
-            Uri selectedImage = data.getData();
-            String[] filePathColumn = { MediaStore.Images.Media.DATA };
-
-            Cursor cursor = getContentResolver().query(selectedImage, filePathColumn, null, null, null);
-            try {
-                cursor.moveToFirst();
-
-                int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-                String picturePath = cursor.getString(columnIndex);
-
-                preferences.edit().putString(SettingsActivity.KEY_TEMPLATE_IMAGE, picturePath).apply();
-                showTemplateImage();
-            } finally {
-                cursor.close();
-            }
-        }
-    }
-
     /**
      * Fits chosen image to screen size.
      */
     public void showTemplateImage() {
         ImageView template = (ImageView)findViewById(R.id.canvas_template);
-        template.setImageDrawable(null);
-
-        if (template.getVisibility() == View.VISIBLE) {
-            String picturePath = preferences.getString(SettingsActivity.KEY_TEMPLATE_IMAGE, null);
-            if (picturePath != null)
-                try {
-                    final Drawable drawable = new BitmapDrawable(getResources(), picturePath);
-                    template.setScaleType(ImageView.ScaleType.FIT_XY);
-                    template.setImageDrawable(drawable);
-                } catch (Exception e) {
-                    Toast.makeText(this, e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
-                }
+        template.setVisibility(View.VISIBLE);
+        String picturePath = preferences.getString(SettingsActivity.KEY_TEMPLATE_IMAGE, null);
+        if (picturePath != null) {
+            try {
+                Drawable d = Drawable.createFromPath(picturePath);
+                template.setImageDrawable(d);
+                //Bitmap bm = BitmapFactory.decodeFile(picturePath);
+                //template.setImageBitmap(bm);
+                Log.i("drawn", picturePath);
+            } catch (Exception e) {
+                Toast.makeText(this, e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+            }
         }
     }
 
@@ -227,7 +187,6 @@ public class CanvasActivity extends AppCompatActivity implements View.OnSystemUi
 
             findViewById(R.id.canvas_template).setVisibility(success ? View.VISIBLE : View.GONE);
             findViewById(R.id.canvas).setVisibility(success ? View.VISIBLE : View.GONE);
-            findViewById(R.id.canvas_message).setVisibility(success ? View.GONE : View.VISIBLE);
         }
     }
 

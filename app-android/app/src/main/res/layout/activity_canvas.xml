@@ -6,24 +6,16 @@
 
     <ImageView
         android:id="@+id/canvas_template"
+        android:src="@drawable/ic_action_picture"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:scaleType="fitCenter"/>
+        android:scaleType="fitXY"/>
 
     <view
         android:id="@+id/canvas"
         class="at.bitfire.gfxtablet.CanvasView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
-
-    <TextView
-        android:id="@+id/canvas_message"
-        android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginLeft="10dp"
-        android:layout_marginRight="10dp"
-        android:gravity="center"
-        android:text="@string/no_host_defined"
-        android:textAppearance="?android:attr/textAppearanceLarge"/>
+        android:visibility="visible" />
 
 </FrameLayout>
