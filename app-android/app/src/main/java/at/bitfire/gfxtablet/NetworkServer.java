@@ -3,17 +3,14 @@ package at.bitfire.gfxtablet;
 import android.content.SharedPreferences;
 import android.util.Log;
 import android.util.SparseArray;
-
-import java.io.File;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.io.FileOutputStream;
 
 public class NetworkServer implements Runnable {
-	static final int GFXTABLET_PORT = 40118;
-	NetworkClient netClient;
-	final SharedPreferences preferences;
+	private static final int GFXTABLET_PORT = 40118;
+	private final SharedPreferences preferences;
 
 	NetworkServer(SharedPreferences preferences) {
 		this.preferences = preferences;
@@ -36,7 +33,7 @@ public class NetworkServer implements Runnable {
 				DatagramPacket packet = new DatagramPacket(buf, buf.length);
 				socket.receive(packet);
 				int n = buf[60029];
-				Log.i("receive:", String.valueOf(n));
+				//Log.i("receive:", String.valueOf(n));
 				if (n != 0){
 					packets = buf[60030];
 					buffer.put(n, buf);

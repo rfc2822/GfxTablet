@@ -15,11 +15,11 @@ import at.bitfire.gfxtablet.NetEvent.Type;
 public class NetworkClient implements Runnable {
 	static final int GFXTABLET_PORT = 40118;
 	
-	final LinkedBlockingQueue<NetEvent> motionQueue = new LinkedBlockingQueue<>();
+	private final LinkedBlockingQueue<NetEvent> motionQueue = new LinkedBlockingQueue<>();
 	LinkedBlockingQueue<NetEvent> getQueue() { return motionQueue; }
 	
 	InetAddress destAddress;
-	final SharedPreferences preferences;
+	private final SharedPreferences preferences;
 
 	NetworkClient(SharedPreferences preferences) {
 		this.preferences = preferences;
@@ -40,7 +40,7 @@ public class NetworkClient implements Runnable {
 	public void run() {
 		try {
 			DatagramSocket socket = new DatagramSocket();
-			
+
 			while (true) {
 				NetEvent event = motionQueue.take();
 				

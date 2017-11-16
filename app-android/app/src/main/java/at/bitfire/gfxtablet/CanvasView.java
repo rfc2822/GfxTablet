@@ -3,40 +3,33 @@ package at.bitfire.gfxtablet;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-
 import at.bitfire.gfxtablet.NetEvent.Type;
 
 @SuppressLint("ViewConstructor")
 public class CanvasView extends View implements SharedPreferences.OnSharedPreferenceChangeListener {
+    final SharedPreferences settings;
     private static final String TAG = "GfxTablet.CanvasView";
-
 	private enum InRangeStatus {
 		OutOfRange,
 		InRange,
 		FakeInRange
 	}
-
-    final SharedPreferences settings;
-    NetworkClient netClient;
-	boolean acceptStylusOnly;
-	int maxX, maxY;
-	InRangeStatus inRangeStatus;
-
+    private NetworkClient netClient;
+    private boolean acceptStylusOnly;
+    private int maxX, maxY;
+    private InRangeStatus inRangeStatus;
 
     // setup
     public CanvasView(Context context, AttributeSet attributeSet) {
         super(context, attributeSet);
-
         // view is disabled until a network client is set
         setEnabled(false);
-
         settings = PreferenceManager.getDefaultSharedPreferences(context);
         settings.registerOnSharedPreferenceChangeListener(this);
         setInputMethods();
@@ -47,7 +40,6 @@ public class CanvasView extends View implements SharedPreferences.OnSharedPrefer
         netClient = networkClient;
         setEnabled(true);
     }
-
 
     // settings
     protected void setInputMethods() {
@@ -61,9 +53,7 @@ public class CanvasView extends View implements SharedPreferences.OnSharedPrefer
         }
     }
 
-
     // drawing
-
     @Override
 	protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         Log.i(TAG, "Canvas size changed: " + w + "x" + h + " (before: " + oldw + "x" + oldh + ")");
@@ -148,5 +138,4 @@ public class CanvasView extends View implements SharedPreferences.OnSharedPrefer
 	short normalizePressure(float x) {
 		return (short)(Math.min(Math.max(0, x), 2.0) * Short.MAX_VALUE);
 	}
-
 }

@@ -14,5 +14,4 @@
         android:onClick="showSettings"
         app:showAsAction="ifRoom"
         android:title="@string/menu_settings"/>
-
 </menu>
