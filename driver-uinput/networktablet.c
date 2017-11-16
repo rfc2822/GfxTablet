@@ -25,6 +25,7 @@
 
 
 int udp_socket, sending;
+Display *disp;
 
 typedef struct event_packet event_packet;
 typedef struct sockaddr_in sockaddr_in;
@@ -132,7 +133,6 @@ void *send_current_screen(void *arg){
   sending_t *args = (sending_t*) arg;
   sockaddr_in from = args->from;
   int slen = args->slen;
-  Display *disp = XOpenDisplay(":0");
 
   if (!disp) {
     return NULL;
@@ -187,9 +187,9 @@ void *send_current_screen(void *arg){
   }
   sending=0;
 }
-
 int main(void){
   int device;
+  disp = XOpenDisplay(":0");
   sending=0;
   event_packet ev_pkt;
   sending_t sock_t;
