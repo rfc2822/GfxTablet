@@ -9,6 +9,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -59,6 +60,14 @@ public class CanvasActivity extends AppCompatActivity implements View.OnSystemUi
         // notify CanvasView of the network client
         CanvasView canvas = (CanvasView)findViewById(R.id.canvas);
         canvas.setNetworkClient(netClient);
+        setShowTouches(true);
+    }
+
+    private void setShowTouches(boolean b){
+        Settings.System.putInt(CanvasActivity.get().getContentResolver(),
+                "show_touches", b ? 1 : 0);
+        Settings.System.putInt(CanvasActivity.get().getContentResolver(),
+                "pointer_location", b ? 1 : 0);
     }
 
     private void startAutoRefresh() {
@@ -90,12 +99,14 @@ public class CanvasActivity extends AppCompatActivity implements View.OnSystemUi
             stopAutoRefresh();
 
         showTemplateImage();
+        setShowTouches(true);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         stopAutoRefresh();
+        setShowTouches(false);
     }
 
     @Override
@@ -103,6 +114,7 @@ public class CanvasActivity extends AppCompatActivity implements View.OnSystemUi
         super.onDestroy();
         stopAutoRefresh();
         netClient.getQueue().add(new NetEvent(NetEvent.Type.TYPE_DISCONNECT));
+        setShowTouches(false);
     }
 
     @Override
