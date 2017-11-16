@@ -9,7 +9,7 @@ What is GfxTablet?
 ==================
 
 GfxTablet shall make it possible to use your Android device (especially
-tablets) like a graphics tablet.
+tablets) like a graphics tablet with integrated screen view.
 
 It consists of two components:
 
@@ -42,6 +42,8 @@ Author: Ricki Hirner / powered by [bitfire web engineering](https://www.bitfire.
 Features
 --------
 
+* Automatic refresh of the screen
+* You can draw on a picture of your screen
 * Pressure sensitivity supported
 * Size of canvas will be detected and sent to the client
 * Option for ignoring events that are not triggered by a stylus pen:
