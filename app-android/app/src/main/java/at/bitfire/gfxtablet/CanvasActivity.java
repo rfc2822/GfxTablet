@@ -3,9 +3,7 @@ package at.bitfire.gfxtablet;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
@@ -21,20 +19,16 @@ import android.widget.Toast;
 
 import at.bitfire.gfxtablet.NetEvent.Type;
 
-public class CanvasActivity extends AppCompatActivity implements View.OnSystemUiVisibilityChangeListener, SharedPreferences.OnSharedPreferenceChangeListener {
+public class CanvasActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
     private static final String TAG = "GfxTablet.Canvas";
     public static String SCREEN_PATH;
     private static CanvasActivity instance;
     private Handler autoRefreshHandler;
     private Runnable autoRefreshBackground;
     public static CanvasActivity get() { return instance; }
-
-    NetworkClient netClient;
-    NetworkServer netServer;
-
-    SharedPreferences preferences;
-    boolean fullScreen = false;
-
+    private NetworkClient netClient;
+    private NetworkServer netServer;
+    private SharedPreferences preferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -127,20 +121,9 @@ public class CanvasActivity extends AppCompatActivity implements View.OnSystemUi
         netClient.getQueue().add(new NetEvent(Type.TYPE_MOTION, (short) 0, (short) 0, (short) 0));
     }
 
-    @Override
-    public void onBackPressed() {
-        if (fullScreen)
-            switchFullScreen(null);
-        else
-            super.onBackPressed();
-    }
-
     public void showSettings(MenuItem item) {
         startActivityForResult(new Intent(this, SettingsActivity.class), 0);
     }
-
-
-    // preferences were changed
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
@@ -152,7 +135,6 @@ public class CanvasActivity extends AppCompatActivity implements View.OnSystemUi
         }
     }
 
-    // refresh methods
     public void refreshBackground() {
         netClient.getQueue().add(new NetEvent(Type.TYPE_MOTION, (short) 0, (short) 0, (short) 0, -1, false));
     }
@@ -161,41 +143,6 @@ public class CanvasActivity extends AppCompatActivity implements View.OnSystemUi
         refreshBackground();
     }
 
-
-    // full-screen methods
-    public void switchFullScreen(MenuItem item) {
-        final View decorView = getWindow().getDecorView();
-        int uiFlags = decorView.getSystemUiVisibility();
-
-        if (Build.VERSION.SDK_INT >= 14)
-            uiFlags ^= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
-        if (Build.VERSION.SDK_INT >= 16)
-            uiFlags ^= View.SYSTEM_UI_FLAG_FULLSCREEN;
-        if (Build.VERSION.SDK_INT >= 19)
-            uiFlags ^= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
-
-        decorView.setOnSystemUiVisibilityChangeListener(this);
-        decorView.setSystemUiVisibility(uiFlags);
-    }
-
-    @Override
-    public void onSystemUiVisibilityChange(int visibility) {
-        Log.i("GfxTablet", "System UI changed " + visibility);
-
-        fullScreen = (visibility & View.SYSTEM_UI_FLAG_HIDE_NAVIGATION) != 0;
-
-        // show/hide action bar according to full-screen mode
-        if (fullScreen) {
-            CanvasActivity.this.getSupportActionBar().hide();
-            Toast.makeText(CanvasActivity.this, "Press Back button to leave full-screen mode.", Toast.LENGTH_LONG).show();
-        } else
-            CanvasActivity.this.getSupportActionBar().show();
-    }
-
-
-    /**
-     * Fits chosen image to screen size.
-     */
     public void showTemplateImage() {
         ImageView template = (ImageView)findViewById(R.id.canvas_template);
         template.setVisibility(View.VISIBLE);
@@ -207,7 +154,6 @@ public class CanvasActivity extends AppCompatActivity implements View.OnSystemUi
         }
     }
 
-
     private class ConfigureNetworkingTask extends AsyncTask<Void, Void, Boolean> {
         @Override
         protected Boolean doInBackground(Void... params) {
@@ -216,7 +162,10 @@ public class CanvasActivity extends AppCompatActivity implements View.OnSystemUi
 
         protected void onPostExecute(Boolean success) {
             if (success)
-                Toast.makeText(CanvasActivity.this, "Touch events will be sent to " + netClient.destAddress.getHostAddress() + ":" + NetworkClient.GFXTABLET_PORT, Toast.LENGTH_LONG).show();
+                Toast.makeText(CanvasActivity.this,
+                        "Touch events will be sent to " +
+                                netClient.destAddress.getHostAddress() + ":" +
+                                NetworkClient.GFXTABLET_PORT, Toast.LENGTH_LONG).show();
 
             findViewById(R.id.canvas_template).setVisibility(success ? View.VISIBLE : View.GONE);
             findViewById(R.id.canvas).setVisibility(success ? View.VISIBLE : View.GONE);

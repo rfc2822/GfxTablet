@@ -7,14 +7,7 @@
         android:icon="@drawable/ic_renew"
         android:onClick="refreshBackground"
         app:showAsAction="always"
-        android:title="@string/fullscreen"/>
-
-    <item
-        android:id="@+id/menu_fullscreen"
-        android:icon="@drawable/ic_arrow_expand_white_48dp"
-        android:onClick="switchFullScreen"
-        app:showAsAction="ifRoom"
-        android:title="@string/fullscreen"/>
+        android:title="@string/refresh_background"/>
 
     <item
         android:icon="@drawable/ic_settings_white_48dp"
