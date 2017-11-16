@@ -6,7 +6,7 @@
 
     <ImageView
         android:id="@+id/canvas_template"
-        android:src="@drawable/ic_action_picture"
+        android:src="@drawable/ic_renew"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scaleType="fitXY"/>

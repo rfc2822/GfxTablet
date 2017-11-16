@@ -2,20 +2,14 @@ package at.bitfire.gfxtablet;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.preference.PreferenceFragment;
+import android.os.Handler;
 import android.preference.PreferenceManager;
-import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.PopupMenu;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -23,15 +17,16 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.Toast;
+
 import at.bitfire.gfxtablet.NetEvent.Type;
 
 public class CanvasActivity extends AppCompatActivity implements View.OnSystemUiVisibilityChangeListener, SharedPreferences.OnSharedPreferenceChangeListener {
-    private static final int RESULT_LOAD_IMAGE = 1;
     private static final String TAG = "GfxTablet.Canvas";
+    public static String SCREEN_PATH;
     private static CanvasActivity instance;
+    private Handler autoRefreshHandler;
+    private Runnable autoRefreshBackground;
     public static CanvasActivity get() { return instance; }
-
-    final Uri homepageUri = Uri.parse(("https://gfxtablet.bitfire.at"));
 
     NetworkClient netClient;
     NetworkServer netServer;
@@ -44,6 +39,8 @@ public class CanvasActivity extends AppCompatActivity implements View.OnSystemUi
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         instance = this;
+        autoRefreshHandler = new Handler();
+        SCREEN_PATH = CanvasActivity.get().getCacheDir() + "/screen.png";
 
         preferences = PreferenceManager.getDefaultSharedPreferences(this);
         preferences.registerOnSharedPreferenceChangeListener(this);
@@ -64,6 +61,20 @@ public class CanvasActivity extends AppCompatActivity implements View.OnSystemUi
         canvas.setNetworkClient(netClient);
     }
 
+    private void startAutoRefresh() {
+        autoRefreshHandler.postDelayed(new Runnable() {
+            public void run() {
+                refreshBackground();
+                autoRefreshBackground=this;
+                autoRefreshHandler.postDelayed(autoRefreshBackground, 5000);
+            }
+        }, 5000);
+    }
+
+    private void stopAutoRefresh() {
+        autoRefreshHandler.removeCallbacks(autoRefreshBackground);
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -73,12 +84,24 @@ public class CanvasActivity extends AppCompatActivity implements View.OnSystemUi
         else
             getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
+        if (preferences.getBoolean(SettingsActivity.KEY_AUTO_REFRESH, true))
+            startAutoRefresh();
+        else
+            stopAutoRefresh();
+
         showTemplateImage();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        stopAutoRefresh();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        stopAutoRefresh();
         netClient.getQueue().add(new NetEvent(NetEvent.Type.TYPE_DISCONNECT));
     }
 
@@ -118,8 +141,12 @@ public class CanvasActivity extends AppCompatActivity implements View.OnSystemUi
     }
 
     // refresh methods
-    public void refreshBackground(MenuItem item) {
+    public void refreshBackground() {
         netClient.getQueue().add(new NetEvent(Type.TYPE_MOTION, (short) 0, (short) 0, (short) 0, -1, false));
+    }
+
+    public void refreshBackground(MenuItem item) {
+        refreshBackground();
     }
 
 
@@ -160,17 +187,11 @@ public class CanvasActivity extends AppCompatActivity implements View.OnSystemUi
     public void showTemplateImage() {
         ImageView template = (ImageView)findViewById(R.id.canvas_template);
         template.setVisibility(View.VISIBLE);
-        String picturePath = preferences.getString(SettingsActivity.KEY_TEMPLATE_IMAGE, null);
-        if (picturePath != null) {
-            try {
-                Drawable d = Drawable.createFromPath(picturePath);
-                template.setImageDrawable(d);
-                //Bitmap bm = BitmapFactory.decodeFile(picturePath);
-                //template.setImageBitmap(bm);
-                Log.i("drawn", picturePath);
-            } catch (Exception e) {
-                Toast.makeText(this, e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
-            }
+        try {
+            Drawable d = Drawable.createFromPath(SCREEN_PATH);
+            template.setImageDrawable(d);
+        } catch (Exception e) {
+            Toast.makeText(this, e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
         }
     }
 

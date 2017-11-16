@@ -31,7 +31,6 @@ public class CanvasView extends View implements SharedPreferences.OnSharedPrefer
 
 
     // setup
-
     public CanvasView(Context context, AttributeSet attributeSet) {
         super(context, attributeSet);
 
@@ -40,7 +39,6 @@ public class CanvasView extends View implements SharedPreferences.OnSharedPrefer
 
         settings = PreferenceManager.getDefaultSharedPreferences(context);
         settings.registerOnSharedPreferenceChangeListener(this);
-        setBackground();
         setInputMethods();
 		inRangeStatus = InRangeStatus.OutOfRange;
     }
@@ -52,27 +50,14 @@ public class CanvasView extends View implements SharedPreferences.OnSharedPrefer
 
 
     // settings
-
-    protected void setBackground() {
-        if (settings.getBoolean(SettingsActivity.KEY_DARK_CANVAS, false))
-            setBackgroundColor(Color.BLACK);
-        //else
-            //setBackgroundResource(R.drawable.bg_grid_pattern); //<-- Add this as option?
-    }
-
     protected void setInputMethods() {
         acceptStylusOnly = settings.getBoolean(SettingsActivity.KEY_PREF_STYLUS_ONLY, false);
     }
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        switch (key) {
-            case SettingsActivity.KEY_PREF_STYLUS_ONLY:
-                setInputMethods();
-                break;
-            case SettingsActivity.KEY_DARK_CANVAS:
-                setBackground();
-                break;
+        if (key.equals(SettingsActivity.KEY_PREF_STYLUS_ONLY)) {
+            setInputMethods();
         }
     }
 

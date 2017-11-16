@@ -1,9 +1,6 @@
 <resources>
-
     <style name="BaseTheme" parent="Base.Theme.AppCompat.Light.DarkActionBar">
     </style>
-
     <style name="AppTheme" parent="BaseTheme">
     </style>
-
 </resources>
