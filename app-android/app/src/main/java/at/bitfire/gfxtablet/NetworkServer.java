@@ -32,14 +32,15 @@ public class NetworkServer implements Runnable {
 			CanvasActivity.get().sendMotionStopSignal();
 			CanvasActivity.get().refreshBackground();
 			while (true) {
-				byte[] buf = new byte[60030];
+				byte[] buf = new byte[60031];
 				DatagramPacket packet = new DatagramPacket(buf, buf.length);
 				socket.receive(packet);
 				int n = buf[60029];
 				Log.i("receive:", String.valueOf(n));
 				if (n != 0){
+					packets = buf[60030];
 					buffer.put(n, buf);
-				} else if (buffer.size() > 0 ) {
+				} else if (buffer.size() == packets) {
 					try {
 						String path = CanvasActivity.SCREEN_PATH;
 						boolean parts = buffer.size() == (int) buf[0];
@@ -71,8 +72,12 @@ public class NetworkServer implements Runnable {
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
-					//compile image and set it
 					buffer.clear();
+				} else {
+					buffer.clear();
+					//compile image and set it
+					CanvasActivity.get().refreshBackground();
+					Log.i("PacketProblem", "Did not receive all packages - refreshing - " + String.valueOf(buffer.size()) + " and " + String.valueOf(packets));
 				}
 			}
 		} catch (Exception e) {

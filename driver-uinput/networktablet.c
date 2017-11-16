@@ -1,8 +1,7 @@
-
+/* Compile with 
+ * gcc networktablet.c -lX11 `pkg-config --cflags --libs gtk+-3.0`
+ * */
 #include <X11/Xlib.h>
-#include <X11/Xutil.h>
-#include <X11/X.h>
-#include <cairo.h>
 #include <cairo-xlib.h>
 #include <pthread.h>
 #include <stdio.h>
@@ -126,17 +125,19 @@ void msleep(int ms){
 }
 
 void *send_current_screen(void *arg){
+  while (sending) {
+    msleep(500);
+  }
+  printf("\nsend_thread\n");
   sending_t *args = (sending_t*) arg;
   sockaddr_in from = args->from;
   int slen = args->slen;
   Display *disp = XOpenDisplay(":0");
 
-  if (sending || !disp) {
+  if (!disp) {
     return NULL;
   }
-  printf("\nsend_thread\n");
 
-  msleep(300);
   sending=1;
   Window root;
   cairo_surface_t *surface;
@@ -158,14 +159,21 @@ void *send_current_screen(void *arg){
   }
   from.sin_port = htons(GFXTABLET_PORT);
   int max=60000;
-  char buff[max+30];
+  char buff[max+31];
   int n=1;
-  while(fread(buff,sizeof(char),max,istream) != 0){
-    printf("Send packet to %s:%d\n", inet_ntoa(from.sin_addr), ntohs(from.sin_port));
+  fseek(istream, 0, SEEK_END); // seek to end of file
+  long size = ftell(istream); // get current file pointer
+  int packets = size /  max + 1;
+  fseek(istream, 0, SEEK_SET); // seek back to beginning of file
+
+  while (fread(buff, sizeof(char), max, istream) != 0) {
+    printf("Send packet to %s:%d - %d of %d\n", inet_ntoa(from.sin_addr), ntohs(from.sin_port), n, packets);
     buff[max +29] = n;
+    buff[max +30] = packets;
     if (sendto(udp_socket, buff, sizeof(buff), 0, (struct sockaddr*) &from, slen) == -1){
       die("sendto()");
     }
+    msleep(10);
     n++;
     for (int r = 0; r <= max ; r++){
       buff[r] = 0;
@@ -218,9 +226,11 @@ int main(void){
     ev_pkt.pressure = ntohs(ev_pkt.pressure);
     printf("x: %hu, y: %hu, pressure: %hu\n", ev_pkt.x, ev_pkt.y, ev_pkt.pressure);
 
-    send_event(device, EV_ABS, ABS_X, ev_pkt.x);
-    send_event(device, EV_ABS, ABS_Y, ev_pkt.y);
-    send_event(device, EV_ABS, ABS_PRESSURE, ev_pkt.pressure);
+    if (ev_pkt.x != 0 && ev_pkt.y != 0) {
+      send_event(device, EV_ABS, ABS_X, ev_pkt.x);
+      send_event(device, EV_ABS, ABS_Y, ev_pkt.y);
+      send_event(device, EV_ABS, ABS_PRESSURE, ev_pkt.pressure);
+    }
 
     switch (ev_pkt.type) {
       case EVENT_TYPE_MOTION:
@@ -244,11 +254,11 @@ int main(void){
         break;
     }
 
-    if (ev_pkt.pressure == 0 && memcmp(inet_ntoa(sock_t.from.sin_addr), "0.0.0.0", 7) != 0) {
-      if(pthread_create(&screen_send_t, NULL, send_current_screen, &sock_t)) {
-        fprintf(stderr, "Error creating thread\n");
-        return 1;
-      }
+    if (ev_pkt.down == 0 && ev_pkt.pressure == 0 &&
+        memcmp(inet_ntoa(sock_t.from.sin_addr), "0.0.0.0", 7) != 0 &&
+        pthread_create(&screen_send_t, NULL, send_current_screen, &sock_t)) {
+      fprintf(stderr, "Error creating thread\n");
+      return 1;
     }
   }
   close(udp_socket);
