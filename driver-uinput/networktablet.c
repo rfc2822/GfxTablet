@@ -24,8 +24,6 @@ int udp_socket;
 
 void init_device(int fd)
 {
-	struct uinput_user_dev uidev;
-
 	// enable synchronization
 	if (ioctl(fd, UI_SET_EVBIT, EV_SYN) < 0)
 		die("error: ioctl UI_SET_EVBIT EV_SYN");
@@ -52,23 +50,56 @@ void init_device(int fd)
 	if (ioctl(fd, UI_SET_ABSBIT, ABS_PRESSURE) < 0)
 		die("error: ioctl UI_SETEVBIT ABS_PRESSURE");
 
-	memset(&uidev, 0, sizeof(uidev));
-	snprintf(uidev.name, UINPUT_MAX_NAME_SIZE, "Network Tablet");
-	uidev.id.bustype = BUS_VIRTUAL;
-	uidev.id.vendor  = 0x1;
-	uidev.id.product = 0x1;
-	uidev.id.version = 1;
-	uidev.absmin[ABS_X] = 0;
-	uidev.absmax[ABS_X] = UINT16_MAX;
-	uidev.absmin[ABS_Y] = 0;
-	uidev.absmax[ABS_Y] = UINT16_MAX;
-	uidev.absmin[ABS_PRESSURE] = 0;
-	uidev.absmax[ABS_PRESSURE] = INT16_MAX;
-	if (write(fd, &uidev, sizeof(uidev)) < 0)
-		die("error: write");
+        {
+          struct uinput_abs_setup abs_setup;
+          struct uinput_setup setup;
 
-	if (ioctl(fd, UI_DEV_CREATE) < 0)
-		die("error: ioctl");
+          memset(&abs_setup, 0, sizeof(abs_setup));
+          abs_setup.code = ABS_X;
+          abs_setup.absinfo.value = 0;
+          abs_setup.absinfo.minimum = 0;
+          abs_setup.absinfo.maximum = UINT16_MAX;
+          abs_setup.absinfo.fuzz = 0;
+          abs_setup.absinfo.flat = 0;
+          abs_setup.absinfo.resolution = 400;
+          if (ioctl(fd, UI_ABS_SETUP, &abs_setup) < 0)
+            die("error: UI_ABS_SETUP ABS_X");
+
+          memset(&abs_setup, 0, sizeof(abs_setup));
+          abs_setup.code = ABS_Y;
+          abs_setup.absinfo.value = 0;
+          abs_setup.absinfo.minimum = 0;
+          abs_setup.absinfo.maximum = UINT16_MAX;
+          abs_setup.absinfo.fuzz = 0;
+          abs_setup.absinfo.flat = 0;
+          abs_setup.absinfo.resolution = 400;
+          if (ioctl(fd, UI_ABS_SETUP, &abs_setup) < 0)
+            die("error: UI_ABS_SETUP ABS_Y");
+
+          memset(&abs_setup, 0, sizeof(abs_setup));
+          abs_setup.code = ABS_PRESSURE;
+          abs_setup.absinfo.value = 0;
+          abs_setup.absinfo.minimum = 0;
+          abs_setup.absinfo.maximum = INT16_MAX;
+          abs_setup.absinfo.fuzz = 0;
+          abs_setup.absinfo.flat = 0;
+          abs_setup.absinfo.resolution = 0;
+          if (ioctl(fd, UI_ABS_SETUP, &abs_setup) < 0)
+            die("error: UI_ABS_SETUP ABS_PRESSURE");
+
+          memset(&setup, 0, sizeof(setup));
+          snprintf(setup.name, UINPUT_MAX_NAME_SIZE, "Network Tablet");
+          setup.id.bustype = BUS_VIRTUAL;
+          setup.id.vendor  = 0x1;
+          setup.id.product = 0x1;
+          setup.id.version = 2;
+          setup.ff_effects_max = 0;
+          if (ioctl(fd, UI_DEV_SETUP, &setup) < 0)
+            die("error: UI_DEV_SETUP");
+
+          if (ioctl(fd, UI_DEV_CREATE) < 0)
+            die("error: ioctl");
+        }
 }
 
 int prepare_socket()
