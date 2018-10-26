@@ -1,4 +1,7 @@
 
+**This project is not maintained anymore. If you're interested in taking it over,
+please tell me at info@bitfire.at.**
+
 To be informed about updates:
 
 * [follow GfxTablet on Twitter](https://twitter.com/GfxTablet)
