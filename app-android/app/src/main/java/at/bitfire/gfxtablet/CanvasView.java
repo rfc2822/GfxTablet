@@ -3,44 +3,35 @@ package at.bitfire.gfxtablet;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-
 import at.bitfire.gfxtablet.NetEvent.Type;
 
 @SuppressLint("ViewConstructor")
 public class CanvasView extends View implements SharedPreferences.OnSharedPreferenceChangeListener {
+    final SharedPreferences settings;
     private static final String TAG = "GfxTablet.CanvasView";
-
 	private enum InRangeStatus {
 		OutOfRange,
 		InRange,
 		FakeInRange
 	}
-
-    final SharedPreferences settings;
-    NetworkClient netClient;
-	boolean acceptStylusOnly;
-	int maxX, maxY;
-	InRangeStatus inRangeStatus;
-
+    private NetworkClient netClient;
+    private boolean acceptStylusOnly;
+    private int maxX, maxY;
+    private InRangeStatus inRangeStatus;
 
     // setup
-
     public CanvasView(Context context, AttributeSet attributeSet) {
         super(context, attributeSet);
-
         // view is disabled until a network client is set
         setEnabled(false);
-
         settings = PreferenceManager.getDefaultSharedPreferences(context);
         settings.registerOnSharedPreferenceChangeListener(this);
-        setBackground();
         setInputMethods();
 		inRangeStatus = InRangeStatus.OutOfRange;
     }
@@ -50,35 +41,19 @@ public class CanvasView extends View implements SharedPreferences.OnSharedPrefer
         setEnabled(true);
     }
 
-
     // settings
-
-    protected void setBackground() {
-        if (settings.getBoolean(SettingsActivity.KEY_DARK_CANVAS, false))
-            setBackgroundColor(Color.BLACK);
-        else
-            setBackgroundResource(R.drawable.bg_grid_pattern);
-    }
-
     protected void setInputMethods() {
         acceptStylusOnly = settings.getBoolean(SettingsActivity.KEY_PREF_STYLUS_ONLY, false);
     }
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        switch (key) {
-            case SettingsActivity.KEY_PREF_STYLUS_ONLY:
-                setInputMethods();
-                break;
-            case SettingsActivity.KEY_DARK_CANVAS:
-                setBackground();
-                break;
+        if (key.equals(SettingsActivity.KEY_PREF_STYLUS_ONLY)) {
+            setInputMethods();
         }
     }
 
-
     // drawing
-
     @Override
 	protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         Log.i(TAG, "Canvas size changed: " + w + "x" + h + " (before: " + oldw + "x" + oldh + ")");
@@ -163,5 +138,4 @@ public class CanvasView extends View implements SharedPreferences.OnSharedPrefer
 	short normalizePressure(float x) {
 		return (short)(Math.min(Math.max(0, x), 2.0) * Short.MAX_VALUE);
 	}
-
 }

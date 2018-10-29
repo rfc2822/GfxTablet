@@ -6,40 +6,39 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class NetEvent {
+class NetEvent {
 	enum Type {
 		TYPE_MOTION,
 		TYPE_BUTTON,
-		
-		// not specified in protocol, only needed to shut down network thread 
+		// not specified in protocol, only needed to shut down network thread
 		TYPE_DISCONNECT
 	}
-	static final String signature = "GfxTablet";
-	static final short protocol_version = 2;
+	private static final String signature = "GfxTablet";
+	private static final short protocol_version = 2;
 	
 	final Type type;
 	short x, y, pressure;
 	byte button, button_down;
 
 	
-	public NetEvent(Type type) {
+	NetEvent(Type type) {
 		this.type = type;
 	}
 
-	public NetEvent(Type type, short x, short y, short pressure) {
+	NetEvent(Type type, short x, short y, short pressure) {
 		this.type = type;
 		this.x = x;
 		this.y = y;
 		this.pressure = pressure;
 	}
 	
-	public NetEvent(Type type, short x, short y, short pressure, int button, boolean button_down) {
+	NetEvent(Type type, short x, short y, short pressure, int button, boolean button_down) {
 		this(type, x, y, pressure);
 		this.button = (byte)button;
 		this.button_down = (byte)(button_down ? 1 : 0);
 	}
 		
-	public byte[] toByteArray() {
+	byte[] toByteArray() {
 		if (type == Type.TYPE_DISCONNECT)
 			return null;
 		

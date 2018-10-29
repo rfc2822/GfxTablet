@@ -2,18 +2,13 @@ package at.bitfire.gfxtablet;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.database.Cursor;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
-import android.preference.PreferenceFragment;
+import android.os.Handler;
 import android.preference.PreferenceManager;
-import android.provider.MediaStore;
+import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.PopupMenu;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -22,21 +17,25 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-public class CanvasActivity extends AppCompatActivity implements View.OnSystemUiVisibilityChangeListener, SharedPreferences.OnSharedPreferenceChangeListener {
-    private static final int RESULT_LOAD_IMAGE = 1;
+import at.bitfire.gfxtablet.NetEvent.Type;
+
+public class CanvasActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
     private static final String TAG = "GfxTablet.Canvas";
-
-    final Uri homepageUri = Uri.parse(("https://gfxtablet.bitfire.at"));
-
-    NetworkClient netClient;
-
-    SharedPreferences preferences;
-    boolean fullScreen = false;
-
+    public static String SCREEN_PATH;
+    private static CanvasActivity instance;
+    private Handler autoRefreshHandler;
+    private Runnable autoRefreshBackground;
+    public static CanvasActivity get() { return instance; }
+    private NetworkClient netClient;
+    private NetworkServer netServer;
+    private SharedPreferences preferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        instance = this;
+        autoRefreshHandler = new Handler();
+        SCREEN_PATH = CanvasActivity.get().getCacheDir() + "/screen.png";
 
         preferences = PreferenceManager.getDefaultSharedPreferences(this);
         preferences.registerOnSharedPreferenceChangeListener(this);
@@ -46,11 +45,37 @@ public class CanvasActivity extends AppCompatActivity implements View.OnSystemUi
         // create network client in a separate thread
         netClient = new NetworkClient(PreferenceManager.getDefaultSharedPreferences(this));
         new Thread(netClient).start();
+        // create network server in a separate thread
+        netServer = new NetworkServer(PreferenceManager.getDefaultSharedPreferences(this));
+        new Thread(netServer).start();
+
         new ConfigureNetworkingTask().execute();
 
         // notify CanvasView of the network client
         CanvasView canvas = (CanvasView)findViewById(R.id.canvas);
         canvas.setNetworkClient(netClient);
+        setShowTouches(true);
+    }
+
+    private void setShowTouches(boolean b){
+        Settings.System.putInt(CanvasActivity.get().getContentResolver(),
+                "show_touches", b ? 1 : 0);
+        Settings.System.putInt(CanvasActivity.get().getContentResolver(),
+                "pointer_location", b ? 1 : 0);
+    }
+
+    private void startAutoRefresh() {
+        autoRefreshHandler.postDelayed(new Runnable() {
+            public void run() {
+                refreshBackground();
+                autoRefreshBackground=this;
+                autoRefreshHandler.postDelayed(autoRefreshBackground, 5000);
+            }
+        }, 5000);
+    }
+
+    private void stopAutoRefresh() {
+        autoRefreshHandler.removeCallbacks(autoRefreshBackground);
     }
 
     @Override
@@ -62,13 +87,28 @@ public class CanvasActivity extends AppCompatActivity implements View.OnSystemUi
         else
             getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
+        if (preferences.getBoolean(SettingsActivity.KEY_AUTO_REFRESH, true))
+            startAutoRefresh();
+        else
+            stopAutoRefresh();
+
         showTemplateImage();
+        setShowTouches(true);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        stopAutoRefresh();
+        setShowTouches(false);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        stopAutoRefresh();
         netClient.getQueue().add(new NetEvent(NetEvent.Type.TYPE_DISCONNECT));
+        setShowTouches(false);
     }
 
     @Override
@@ -77,28 +117,13 @@ public class CanvasActivity extends AppCompatActivity implements View.OnSystemUi
         return true;
     }
 
-    @Override
-    public void onBackPressed() {
-        if (fullScreen)
-            switchFullScreen(null);
-        else
-            super.onBackPressed();
-    }
-
-    public void showAbout(MenuItem item) {
-        startActivity(new Intent(Intent.ACTION_VIEW, homepageUri));
-    }
-
-    public void showDonate(MenuItem item) {
-        startActivity(new Intent(Intent.ACTION_VIEW, homepageUri.buildUpon().appendPath("donate").build()));
+    public void sendMotionStopSignal(){
+        netClient.getQueue().add(new NetEvent(Type.TYPE_MOTION, (short) 0, (short) 0, (short) 0));
     }
 
     public void showSettings(MenuItem item) {
         startActivityForResult(new Intent(this, SettingsActivity.class), 0);
     }
-
-
-    // preferences were changed
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
@@ -110,106 +135,24 @@ public class CanvasActivity extends AppCompatActivity implements View.OnSystemUi
         }
     }
 
-
-    // full-screen methods
-
-    public void switchFullScreen(MenuItem item) {
-        final View decorView = getWindow().getDecorView();
-        int uiFlags = decorView.getSystemUiVisibility();
-
-        if (Build.VERSION.SDK_INT >= 14)
-            uiFlags ^= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
-        if (Build.VERSION.SDK_INT >= 16)
-            uiFlags ^= View.SYSTEM_UI_FLAG_FULLSCREEN;
-        if (Build.VERSION.SDK_INT >= 19)
-            uiFlags ^= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
-
-        decorView.setOnSystemUiVisibilityChangeListener(this);
-        decorView.setSystemUiVisibility(uiFlags);
+    public void refreshBackground() {
+        netClient.getQueue().add(new NetEvent(Type.TYPE_MOTION, (short) 0, (short) 0, (short) 0, -1, false));
     }
 
-    @Override
-    public void onSystemUiVisibilityChange(int visibility) {
-        Log.i("GfxTablet", "System UI changed " + visibility);
-
-        fullScreen = (visibility & View.SYSTEM_UI_FLAG_HIDE_NAVIGATION) != 0;
-
-        // show/hide action bar according to full-screen mode
-        if (fullScreen) {
-            CanvasActivity.this.getSupportActionBar().hide();
-            Toast.makeText(CanvasActivity.this, "Press Back button to leave full-screen mode.", Toast.LENGTH_LONG).show();
-        } else
-            CanvasActivity.this.getSupportActionBar().show();
-    }
-
-
-    // template image logic
-
-    private String getTemplateImagePath() {
-        return preferences.getString(SettingsActivity.KEY_TEMPLATE_IMAGE, null);
-    }
-
-    public void setTemplateImage(MenuItem item) {
-        if (getTemplateImagePath() == null)
-            selectTemplateImage(item);
-        else {
-            // template image already set, show popup
-            PopupMenu popup = new PopupMenu(this, findViewById(R.id.menu_set_template_image));
-            popup.getMenuInflater().inflate(R.menu.set_template_image, popup.getMenu());
-            popup.show();
-        }
-    }
-
-    public void selectTemplateImage(MenuItem item) {
-        Intent i = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        startActivityForResult(i, RESULT_LOAD_IMAGE);
-    }
-
-    public void clearTemplateImage(MenuItem item) {
-        preferences.edit().remove(SettingsActivity.KEY_TEMPLATE_IMAGE).commit();
-        showTemplateImage();
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == RESULT_LOAD_IMAGE && resultCode == RESULT_OK && data != null) {
-            Uri selectedImage = data.getData();
-            String[] filePathColumn = { MediaStore.Images.Media.DATA };
-
-            Cursor cursor = getContentResolver().query(selectedImage, filePathColumn, null, null, null);
-            try {
-                cursor.moveToFirst();
-
-                int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-                String picturePath = cursor.getString(columnIndex);
-
-                preferences.edit().putString(SettingsActivity.KEY_TEMPLATE_IMAGE, picturePath).commit();
-                showTemplateImage();
-            } finally {
-                cursor.close();
-            }
-        }
+    public void refreshBackground(MenuItem item) {
+        refreshBackground();
     }
 
     public void showTemplateImage() {
         ImageView template = (ImageView)findViewById(R.id.canvas_template);
-        template.setImageDrawable(null);
-
-        if (template.getVisibility() == View.VISIBLE) {
-            String picturePath = preferences.getString(SettingsActivity.KEY_TEMPLATE_IMAGE, null);
-            if (picturePath != null)
-                try {
-                    // TODO load bitmap efficiently, for intended view size and display resolution
-                    // https://developer.android.com/training/displaying-bitmaps/load-bitmap.html
-                    final Drawable drawable = new BitmapDrawable(getResources(), picturePath);
-                    template.setImageDrawable(drawable);
-                } catch (Exception e) {
-                    Toast.makeText(this, e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
-                }
+        template.setVisibility(View.VISIBLE);
+        try {
+            Drawable d = Drawable.createFromPath(SCREEN_PATH);
+            template.setImageDrawable(d);
+        } catch (Exception e) {
+            Toast.makeText(this, e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
         }
     }
-
 
     private class ConfigureNetworkingTask extends AsyncTask<Void, Void, Boolean> {
         @Override
@@ -219,11 +162,13 @@ public class CanvasActivity extends AppCompatActivity implements View.OnSystemUi
 
         protected void onPostExecute(Boolean success) {
             if (success)
-                Toast.makeText(CanvasActivity.this, "Touch events will be sent to " + netClient.destAddress.getHostAddress() + ":" + NetworkClient.GFXTABLET_PORT, Toast.LENGTH_LONG).show();
+                Toast.makeText(CanvasActivity.this,
+                        "Touch events will be sent to " +
+                                netClient.destAddress.getHostAddress() + ":" +
+                                NetworkClient.GFXTABLET_PORT, Toast.LENGTH_LONG).show();
 
             findViewById(R.id.canvas_template).setVisibility(success ? View.VISIBLE : View.GONE);
             findViewById(R.id.canvas).setVisibility(success ? View.VISIBLE : View.GONE);
-            findViewById(R.id.canvas_message).setVisibility(success ? View.GONE : View.VISIBLE);
         }
     }
 
