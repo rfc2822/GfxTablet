@@ -1,11 +1,11 @@
-TARGET = networktablet
-PREFIX = /usr/local
+PREFIX ?= /usr/local
+CFLAGS ?= -Wall -g
 BINDIR = $(PREFIX)/bin
 
-networktablet : networktablet.c
+networktablet:
 
-clean :
-	rm -f networktablet
+clean:
+	$(RM) networktablet
 
-install :
-	install -D networktablet $(DESTDIR)$(BINDIR)/networktablet
+install:
+	install -D networktablet "$(DESTDIR)$(BINDIR)/networktablet"

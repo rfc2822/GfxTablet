@@ -1,14 +1,12 @@
-#define GFXTABLET_PORT 40118
-
+#define GFXTABLET_DEFAULT_HOST "::"
+#define GFXTABLET_DEFAULT_PORT "40118"
 #define PROTOCOL_VERSION 2
-
-
-#pragma pack(push)
-#pragma pack(1)
 
 #define EVENT_TYPE_MOTION 0
 #define EVENT_TYPE_BUTTON 1
 
+#pragma pack(push)
+#pragma pack(1)
 struct event_packet
 {
 	char signature[9];
@@ -28,5 +26,4 @@ struct event_packet
 		int8_t down;		/* 1 = button down, 0 = button up */
 	};
 };
-
 #pragma pack(pop)
