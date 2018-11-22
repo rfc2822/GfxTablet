@@ -1,0 +1,11 @@
+/Debug/
+/Release/
+/ipch/
+/driver-win32.aps
+/driver-win32.sdf
+/driver-win32.suo
+/*.vcxproj.user
+/driver-win32.sln
+Browse.VC.*
+*.ipch
+*.suo
