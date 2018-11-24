@@ -150,7 +150,7 @@ namespace GfxTabletWinDotnet
 		{
 			Listener.Instance.TabletEvent += Instance_TabletEvent;
 			Listener.Instance.Start();
-            this.txtIpAddress.Text = Listener.Instance.ListenAddress.ToString();
+            this.txtIpAddress.Text = Listener.Instance.listenAddress.ToString();
         }
     }
 }
