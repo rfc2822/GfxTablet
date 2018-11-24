@@ -54,12 +54,24 @@
     <Compile Include="GfxTabletSettings.Designer.cs">
       <DependentUpon>GfxTabletSettings.cs</DependentUpon>
     </Compile>
+    <Compile Include="GfxTabletTestdialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GfxTabletTestdialog.Designer.cs">
+      <DependentUpon>GfxTabletTestdialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Protocol.cs" />
+    <Compile Include="TouchInjector.cs" />
+    <Compile Include="Win32_Windows8Touch_Interop.cs" />
+    <Compile Include="Win32_MouseSimulator_Interop.cs" />
     <Compile Include="Win32Interop.cs" />
     <EmbeddedResource Include="GfxTabletSettings.resx">
       <DependentUpon>GfxTabletSettings.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GfxTabletTestdialog.resx">
+      <DependentUpon>GfxTabletTestdialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

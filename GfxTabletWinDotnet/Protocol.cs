@@ -109,27 +109,11 @@ namespace GfxTabletWinDotnet
 			return stuff;
 		}
 
-		class StateObject
-		{
-			public static int BufferSize = 1024;
-			internal Socket workSocket;
-			internal byte[] buffer = new byte[1024];
+        void StartInjector()
+        {
+            bool ok = Win32Interop.InitializeTouchInjection(10, Win32Interop.enInitTouchInjectionModes.TOUCH_FEEDBACK_DEFAULT);
+            System.Diagnostics.Trace.Assert(ok);
 
-		}
-
-		void NewConnection(IAsyncResult ar)
-		{
-			Socket listenerSocket = (Socket)ar.AsyncState;
-
-			// Create the state object
-			StateObject state = new StateObject();
-			state.workSocket = (Socket)listenerSocket.EndAccept(ar);
-			state.workSocket.BeginReceive(state.buffer, 0, Marshal.SizeOf(typeof(Protocol.event_packet)), 0, new AsyncCallback(ReceiveCallback), state);
-		}
-
-		private void ReceiveCallback(IAsyncResult ar)
-		{
-			//ar.AsyncState;
-		}
-	}
+        }
+    }
 }
