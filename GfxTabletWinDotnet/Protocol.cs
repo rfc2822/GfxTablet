@@ -44,44 +44,42 @@ namespace GfxTabletWinDotnet
 	{
 		public static readonly Listener Instance = new Listener();
 
-		private Listener()
+        public IPAddress ListenAddress { get; private set; }
+        public string ListenHostname { get; private set; }
+        public IPEndPoint ListeningIpEndPoint;
+
+        private Listener()
 		{
-		}
+            this.ListenHostname = Dns.GetHostName();
 
-		//public Socket socket;
-		public IPAddress listenAddress;
+            IPHostEntry hostInfo = Dns.GetHostEntry(ListenHostname);
+            // Get the DNS IP addresses associated with the host.
+            IPAddress[] IPaddresses = hostInfo.AddressList;
+            ListeningIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
 
-		public void Start()
-		{			
-			IPHostEntry hostInfo = Dns.GetHostEntry(Dns.GetHostName());
-			// Get the DNS IP addresses associated with the host.
-			IPAddress[] IPaddresses = hostInfo.AddressList;
+            var nic = NetworkInterface.GetAllNetworkInterfaces().Where(
+                            o => o.OperationalStatus == OperationalStatus.Up 
+                            && o.GetIPProperties().GatewayAddresses.Count > 0).FirstOrDefault();
 
-			//var hostEndPoint = new IPEndPoint(IPAddress.Any, Protocol.GFXTABLET_PORT);
-			//socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-			//socket.Bind(hostEndPoint);
+            foreach (var ip in nic.GetIPProperties().UnicastAddresses)
+            {
+                if (ip.Address.AddressFamily == AddressFamily.InterNetwork) //only use ipv4
+                    ListeningIpEndPoint = new IPEndPoint(ip.Address, 0);
+            }
 
-			//socket.Listen(0);
-			////socket.Listen(2);
-			//socket.BeginAccept(new AsyncCallback(NewConnection), socket);
+            ListenAddress = ListeningIpEndPoint.Address;
+        }
 
-			UdpClient server = new UdpClient(Protocol.GFXTABLET_PORT);
-			IPEndPoint RemoteIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
+        public void Start()
+		{
+            UdpClient server = new UdpClient(Protocol.GFXTABLET_PORT);
 
-			var nic = NetworkInterface.GetAllNetworkInterfaces().Where(o => o.OperationalStatus == OperationalStatus.Up && o.GetIPProperties().GatewayAddresses.Count>0).FirstOrDefault();
-			foreach(var ip in nic.GetIPProperties().UnicastAddresses)
-			{
-				if(ip.Address.AddressFamily == AddressFamily.InterNetwork) //ignore ipv4 
-					RemoteIpEndPoint = new IPEndPoint(ip.Address, 0);
-			}
-
-			listenAddress = RemoteIpEndPoint.Address;
-
-			var thread = new System.Threading.Thread(delegate ()
+            var thread = new System.Threading.Thread(delegate ()
 			{
 				while (true)
 				{
-					Byte[] receiveBytes = server.Receive(ref RemoteIpEndPoint);
+                    IPEndPoint remoteEndpoint = null;
+                    Byte[] receiveBytes = server.Receive(ref remoteEndpoint);
 
 					Protocol.event_packet eventData = ByteArrayToStructure<Protocol.event_packet>(receiveBytes);
 					ntohs(ref eventData.x);
