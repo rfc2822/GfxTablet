@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <string>
 #include <signal.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -11,6 +12,7 @@
 #include <linux/input.h>
 #include <linux/uinput.h>
 #include <stdint.h>
+#include <sstream>
 #include "protocol.h"
 
 #define die(str, args...) { \
@@ -18,6 +20,8 @@
 	exit(EXIT_FAILURE); \
 }
 
+
+using namespace std;
 
 int udp_socket;
 
@@ -135,12 +139,28 @@ void quit(int signal) {
 	close(udp_socket);
 }
 
+int ConvertToInt(string &convert)
+{
+	stringstream sti(convert);
+	int output;
+	sti >> output;
+	return output;
+}
 
-int main(void)
+int main(int argc, char **argv)
 {
 	int device;
 	struct event_packet ev_pkt;
-
+	
+	//add a sort of "cushion" so that less pressure is required to register as
+	//a click and drag
+	string cushion_string = "";
+	int cushion = 0;
+	if (argc == 2)
+	{
+		cushion_string = argv[1];
+		cushion = ConvertToInt(cushion_string);
+	}
 	if ((device = open("/dev/uinput", O_WRONLY | O_NONBLOCK)) < 0)
 		die("error: open");
 
@@ -169,7 +189,7 @@ int main(void)
 
 		ev_pkt.x = ntohs(ev_pkt.x);
 		ev_pkt.y = ntohs(ev_pkt.y);
-		ev_pkt.pressure = ntohs(ev_pkt.pressure);
+		ev_pkt.pressure = ntohs(ev_pkt.pressure) + cushion;
 		printf("x: %hu, y: %hu, pressure: %hu\n", ev_pkt.x, ev_pkt.y, ev_pkt.pressure);
 
 		send_event(device, EV_ABS, ABS_X, ev_pkt.x);
