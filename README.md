@@ -1,11 +1,10 @@
 
-**This project is not maintained anymore. If you're interested in taking it over,
+**This project is currently not actively maintained/managed. If you're interested in taking it over,
 please tell me at info@bitfire.at.**
 
 To be informed about updates:
 
 * [follow GfxTablet on Twitter](https://twitter.com/GfxTablet)
-* [GfxTablet forums](https://gfxtablet.bitfire.at/forums)
 
 
 What is GfxTablet?
@@ -29,9 +28,7 @@ So, you can use your Android tablet or smartphone to control the PC and,
 for instance _use GIMP with your Android tablet as a graphics tablet_
 (even pressure-sensitive, if your hardware supports it).
 
-Homepage: https://gfxtablet.bitfire.at
-
-Help and discussion: https://gfxtablet.bitfire.at/forums
+Help and discussion: [GfxTablet discussions](https://github.com/rfc2822/GfxTablet/discussions)
 
 
 License
@@ -39,7 +36,7 @@ License
 
 GfxTablet is licensed under The MIT License.
 
-Author: Ricki Hirner / powered by [bitfire web engineering](https://www.bitfire.at) / [gimpusers.com](http://www.gimpusers.com)
+Initial contributor: Ricki Hirner / powered by [bitfire web engineering](https://www.bitfire.at) / [gimpusers.com](http://www.gimpusers.com)
 
 
 Features
@@ -60,7 +57,7 @@ Requirements
 If you use Xorg (you probably do):
 
 * Xorg-evdev module loaded and configured – probably on by default, but if it doesn't work, you may
-  need to [activate the module](https://forums.bitfire.at/topic/15/gfxtablet-and-archlinux).
+  need to activate the module.
 
 
 Installation
@@ -138,9 +135,4 @@ Known problems
 
 * With Gnome 3.16 (as shipped with Fedora 22), [Gnome Shell crashes when using GfxTablet](https://bugzilla.redhat.com/show_bug.cgi?id=1209008).
 
-
-Donate
-------
-
-If you find GfxTablet useful, please feel free to [send a donation](https://gfxtablet.bitfire.at/donate).
 
